@@ -291,6 +291,15 @@
       <label>API Key</label>
       <input type="password" id="apiKeyInput" placeholder="sk-..." />
     </div>
+    <div class="field-group">
+      <label>Max Tokens (quiz generation)</label>
+      <div class="range-row">
+        <input type="range" min="500" max="4000" step="100" value="2000" id="maxTokensSlider"
+          oninput="document.getElementById('maxTokensVal').textContent=this.value" />
+        <span class="range-val" id="maxTokensVal">2000</span>
+      </div>
+      <div class="hint">Lower = fewer rate limit hits on Groq/free tiers. Recommended: 2000 for Groq, 4000 for OpenAI.</div>
+    </div>
     <div style="margin-top:1.2rem;display:flex;gap:8px;">
       <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
       <button class="btn btn-ghost" onclick="closeApiModal()">Cancel</button>
@@ -732,6 +741,7 @@ let players = [];
 let difficulty = 'medium';
 let chatStreaming = false;
 let noTimer = false; // No timer global
+let apiMaxTokens = parseInt(localStorage.getItem('qf_maxtokens') || '2000');
 
 // ── MULTIPLAYER BACKEND (WebSocket) ────────────────────────
 // Streamlined: no user-facing buttons.
@@ -986,8 +996,10 @@ function confirmNewGroup() {
   document.getElementById('newGroupInput').value = '';
   closeNewGroupForm();
   saveChatGroups();
-  switchGroup(id);
+  activeGroupId = id;
   renderGroupList();
+  renderChatMessages();
+  document.getElementById('currentGroupTag').textContent = name;
   toast('Group created: ' + name);
 }
 
@@ -1044,6 +1056,8 @@ function openApiModal() {
   document.getElementById('apiBaseInput').value = apiBase;
   document.getElementById('apiModelInput').value = apiModel;
   setProvider(currentProvider, false);
+  document.getElementById('maxTokensSlider').value = apiMaxTokens;
+  document.getElementById('maxTokensVal').textContent = apiMaxTokens;
 }
 function closeApiModal() { document.getElementById('apiModal').classList.add('hidden'); }
 
@@ -1073,6 +1087,8 @@ function saveApiKey() {
   localStorage.setItem('qf_base', apiBase);
   localStorage.setItem('qf_model', apiModel);
   localStorage.setItem('qf_provider', currentProvider);
+  apiMaxTokens = parseInt(document.getElementById('maxTokensSlider').value);
+  localStorage.setItem('qf_maxtokens', apiMaxTokens);
   closeApiModal();
   updateBadge();
   toast('API config saved ✓');
@@ -1194,10 +1210,6 @@ async function sendChatMessage() {
   input.value = '';
   input.style.height = 'auto';
 
-  // Save user message
-  group.messages.push({ role: 'user', content: text });
-  group.history.push({ role: 'user', content: text });
-  saveChatGroups();
   appendBubble('user', text);
 
   chatStreaming = true;
@@ -1207,9 +1219,10 @@ async function sendChatMessage() {
   thinkingBubble.classList.add('thinking');
 
   try {
+    // Build messages: system + full history + new user message
     const messages = [];
     if (sysPrompt) messages.push({ role: 'system', content: sysPrompt });
-    messages.push(...group.history.slice(0, -1)); // history minus last (which we push next)
+    messages.push(...group.history);
     messages.push({ role: 'user', content: text });
 
     const res = await fetch(apiBase + '/chat/completions', {
@@ -1228,6 +1241,9 @@ async function sendChatMessage() {
     thinkingBubble.textContent = reply;
     thinkingBubble.classList.remove('thinking');
 
+    // Save to history only after success
+    group.messages.push({ role: 'user', content: text });
+    group.history.push({ role: 'user', content: text });
     group.messages.push({ role: 'assistant', content: reply });
     group.history.push({ role: 'assistant', content: reply });
     saveChatGroups();
@@ -1303,7 +1319,7 @@ async function extractTextFromFiles() {
       }
     } catch(e) { console.warn('Extract error', file.name, e); }
   }
-  return allText.slice(0, 12000);
+  return allText.slice(0, 4000);
 }
 
 async function extractPDF(file) {
@@ -1391,7 +1407,9 @@ async function generateQuestions(text, cfg) {
     typing: 'Type-in (no options, short 1-3 word answer, field "type":"typing")'
   };
   const typeList = cfg.types.map(t => typeDescs[t]).join('; ');
-  const prompt = `You are a quiz generator. Based on the provided document text, create exactly ${cfg.count} quiz questions at ${cfg.difficulty} difficulty.
+  const prompt = `You are a quiz generator. Output ONLY raw JSON — no markdown, no backticks, no extra text before or after. You MUST always close every bracket and quote. Never truncate. If you run out of space, output fewer questions but always end with valid closed JSON.
+
+Based on the provided document text, create exactly ${cfg.count} quiz questions at ${cfg.difficulty} difficulty.
 
 DOCUMENT TEXT:
 ${text}
@@ -1404,13 +1422,13 @@ REQUIREMENTS:
 - Include a brief "explanation" for each question (1-2 sentences)
 - All questions must be directly based on the document content
 
-Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
+Required output format (valid closed JSON, nothing else):
 {"questions":[{"type":"mcq","question":"...","options":["A","B","C","D"],"correct":[0],"explanation":"..."},{"type":"multi","question":"...","options":["A","B","C","D"],"correct":[0,2],"explanation":"..."},{"type":"typing","question":"...","answer":"...","explanation":"..."}]}`;
 
   const res = await fetch(apiBase + '/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: apiModel, max_tokens: 4000, temperature: 0.7, messages: [{ role: 'user', content: prompt }] })
+    body: JSON.stringify({ model: apiModel, max_tokens: apiMaxTokens, temperature: 0.7, messages: [{ role: 'user', content: prompt }] })
   });
 
   if (!res.ok) {
@@ -1420,8 +1438,31 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
 
   const data = await res.json();
   let raw = (data.choices?.[0]?.message?.content || '').replace(/```json|```/g,'').trim();
-  const parsed = JSON.parse(raw);
-  return parsed.questions || parsed;
+  // Attempt to repair truncated JSON by closing open brackets
+  try {
+    return JSON.parse(raw).questions || JSON.parse(raw);
+  } catch(e) {
+    // Try to salvage partial JSON by closing unclosed structures
+    let fixed = raw;
+    // Close any open string
+    const quoteCount = (fixed.match(/(?<!\\)"/g) || []).length;
+    if (quoteCount % 2 !== 0) fixed += '"';
+    // Close open objects/arrays
+    const opens = (fixed.match(/[{[]/g) || []).length;
+    const closes = (fixed.match(/[}\]]/g) || []).length;
+    const diff = opens - closes;
+    for (let i = 0; i < diff; i++) {
+      fixed += fixed.split('').reverse().find(c => c === '{' || c === '[') === '{' ? '}' : ']';
+    }
+    // Patch trailing commas
+    fixed = fixed.replace(/,\s*([}\]])/g, '$1');
+    try {
+      const parsed = JSON.parse(fixed);
+      return parsed.questions || parsed;
+    } catch(e2) {
+      throw new Error('AI returned invalid JSON. Try reducing question count or using a larger token limit.');
+    }
+  }
 }
 
 // ── LOBBY (HOST) ──────────────────────────────────────────
@@ -1429,12 +1470,10 @@ function setupLobby() {
   playerName = quizConfig.hostName || 'Host';
   isHost = true;
   gameMode = 'multi';
-  // Create initial host player locally; server will assign clientId as host id.
-  players = [{ id: 'host_local', name: playerName, score: 0, color: COLORS[0], isHost: true, isAI: false }];
+  players = []; // server is source of truth; snapshot will populate this
   mpConnect();
-  // If ws isn't open yet, try shortly after.
   const sendCreate = () => {
-    const ok = mpSend({ type: 'create_room', name: playerName, quizConfig, questions, players });
+    const ok = mpSend({ type: 'create_room', name: playerName, quizConfig, questions });
     if (!ok) setTimeout(sendCreate, 150);
   };
   sendCreate();
@@ -1705,12 +1744,12 @@ function clearTimer() { clearInterval(timerInterval); timerInterval = null; }
 // ── AI BOTS (no API calls) ────────────────────────────────
 // AI player scores are purely random local simulation — zero API tokens used
 function simulateAIScores() {
-  players.forEach((p, i) => {
-    if (i === 0) { p.score = score; return; } // index 0 = real player (host)
-    if (p.isAI) {
-      p.score += Math.floor(Math.random() * 80 + 20);
-    }
+  players.forEach(p => {
+    if (p.isAI) p.score = (p.score || 0) + Math.floor(Math.random() * 80 + 20);
   });
+  // update real player score by clientId
+  const me = players.find(p => p.id === mpClientId);
+  if (me) me.score = score;
   renderLivePlayers();
 }
 
@@ -1727,22 +1766,26 @@ function showResults() {
 
   let lbPlayers;
   if (gameMode === 'multi') {
-    players[0].score = score;
+    const me = players.find(p => p.id === mpClientId);
+    if (me) me.score = score;
     lbPlayers = [...players].sort((a,b) => b.score - a.score);
   } else {
     lbPlayers = [{ name: 'You', score, isMe: true }];
   }
   const max = lbPlayers[0]?.score || 1;
   const rankEmoji = ['🥇','🥈','🥉'];
-  document.getElementById('leaderboard').innerHTML = lbPlayers.map((p,i) => `
-    <div class="lb-item ${p.isMe||(p.name===playerName&&!p.isAI)?'me':''}">
+  document.getElementById('leaderboard').innerHTML = lbPlayers.map((p,i) => {
+    const isMe = p.isMe || p.id === mpClientId;
+    return `
+    <div class="lb-item ${isMe ? 'me' : ''}">
       <div class="lb-rank ${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':''}">${rankEmoji[i]||'#'+(i+1)}</div>
       <div style="flex:1;">
-        <div class="lb-name">${escHtml(p.name)}${p.isMe||(p.name===playerName&&!p.isAI)?' <span style="color:var(--text-muted);font-size:0.8rem;">(You)</span>':''}${p.isAI?' <span class="ai-tag" style="font-size:0.65rem;padding:1px 6px;vertical-align:middle;">AI</span>':''}</div>
+        <div class="lb-name">${escHtml(p.name)}${isMe?' <span style="color:var(--text-muted);font-size:0.8rem;">(You)</span>':''}${p.isAI?' <span class="ai-tag" style="font-size:0.65rem;padding:1px 6px;vertical-align:middle;">AI</span>':''}</div>
         <div class="lb-bar"><div class="lb-bar-fill" style="width:${Math.round((p.score/max)*100)}%"></div></div>
       </div>
       <div class="lb-score">${p.score} pts</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   goTo('screen-results');
 }
 
@@ -1788,15 +1831,8 @@ if (!isLocalDev() && (MP_SERVER_PROD.includes('YOUR-SERVICE') || !MP_SERVER_PROD
 // Chat sidebar toggle
 function toggleSidebar() {
   const sb = document.getElementById('chatSidebar');
-  const btn = document.getElementById('sidebarToggleBtn');
-  if (!sb || !btn) return;
-  if (sb.classList.contains('hidden')) {
-    sb.classList.remove('hidden');
-    btn.style.display = 'none';
-  } else {
-    sb.classList.add('hidden');
-    btn.style.display = '';
-  }
+  if (!sb) return;
+  sb.classList.toggle('hidden');
 }
 
 // Multiplayer is now handled via WebSocket backend (server.js)
