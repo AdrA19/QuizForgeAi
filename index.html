@@ -60,6 +60,8 @@
   .btn-secondary:hover { border-color: var(--border-bright); background: var(--surface3); }
   .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
   .btn-ghost:hover { color: var(--text); border-color: var(--border-bright); }
+  .btn-danger { background: rgba(250,77,109,0.15); color: var(--danger); border: 1px solid rgba(250,77,109,0.3); }
+  .btn-danger:hover { background: rgba(250,77,109,0.25); }
   .btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; }
   .btn:disabled { opacity: 0.4; pointer-events: none; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1.5rem; }
@@ -117,6 +119,7 @@
   .player-badge { font-size: 0.7rem; font-family: var(--font-mono); padding: 2px 8px; border-radius: 999px; }
   .badge-host { background: rgba(124,109,250,0.2); color: var(--accent); }
   .badge-ready { background: rgba(77,250,154,0.15); color: var(--success); }
+  .badge-ai { background: rgba(250,200,66,0.15); color: var(--gold); }
   .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
   .q-progress-wrap { flex: 1; }
   .q-progress-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; }
@@ -195,27 +198,36 @@
   .stat-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem; text-align: center; }
   .stat-num { font-family: var(--font-head); font-size: 1.6rem; font-weight: 700; }
   .stat-lbl { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
-  .stat-correct { color: var(--success); }
-  .stat-wrong { color: var(--danger); }
-  .stat-timeout { color: var(--timeout); }
-  .stat-time { color: var(--accent2); }
+  .stat-correct { color: var(--success); } .stat-wrong { color: var(--danger); } .stat-timeout { color: var(--timeout); } .stat-time { color: var(--accent2); }
   .field-group { margin-bottom: 1rem; }
   .hint { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.4rem; line-height: 1.4; }
   .provider-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
   .provider-pill { font-size: 0.75rem; font-family: var(--font-mono); padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface2); color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
   .provider-pill:hover { border-color: var(--accent); color: var(--accent); }
   .provider-pill.active { border-color: var(--accent); background: rgba(124,109,250,0.12); color: var(--accent); }
-  .ai-chat-btn { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1rem 1.4rem; cursor: pointer; transition: all 0.2s; width: 100%; max-width: 340px; text-align: left; }
-  .ai-chat-btn:hover { border-color: var(--accent); background: rgba(124,109,250,0.06); }
-  .ai-chat-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; flex-shrink: 0; }
-  .ai-chat-label { font-family: var(--font-head); font-size: 1.2rem; font-weight: 800; color: var(--text); }
-  .ai-chat-sub { font-family: var(--font-body); font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
-  .chat-screen { display: flex; flex-direction: column; height: calc(100vh - 120px); min-height: 500px; }
+
+  /* ── CHAT SCREEN ── */
+  .chat-layout { display: flex; height: calc(100vh - 120px); min-height: 500px; gap: 0; }
+  .chat-sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid var(--border); padding-right: 1rem; margin-right: 1rem; }
+  @media(max-width:700px){ .chat-sidebar { display: none; } }
+  .sidebar-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 0.75rem; }
+  .sidebar-title { font-family: var(--font-head); font-size: 0.9rem; font-weight: 700; }
+  .group-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+  .group-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: var(--r); cursor: pointer; font-size: 0.85rem; transition: background 0.15s; border: 1px solid transparent; }
+  .group-item:hover { background: var(--surface2); }
+  .group-item.active { background: rgba(124,109,250,0.12); border-color: rgba(124,109,250,0.25); color: var(--accent); }
+  .group-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .group-item-actions { display: none; gap: 4px; }
+  .group-item:hover .group-item-actions { display: flex; }
+  .group-action-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 0.9rem; padding: 2px 4px; border-radius: 4px; transition: color 0.15s; }
+  .group-action-btn:hover { color: var(--danger); }
+  .new-group-form { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; gap: 6px; }
+  .new-group-form input { flex: 1; padding: 6px 10px; font-size: 0.8rem; }
+  .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .chat-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
   .chat-title { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; flex: 1; }
   .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; padding: 0.5rem 0 1rem; scrollbar-width: thin; scrollbar-color: var(--surface3) transparent; }
   .chat-messages::-webkit-scrollbar { width: 4px; }
-  .chat-messages::-webkit-scrollbar-track { background: transparent; }
   .chat-messages::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 2px; }
   .chat-bubble { max-width: 85%; padding: 0.75rem 1rem; border-radius: var(--r); font-size: 0.92rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
   .bubble-user { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
@@ -228,12 +240,21 @@
   .chat-send:disabled { opacity: 0.4; pointer-events: none; }
   .chat-sys-badge { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); padding: 4px 10px; border-radius: 999px; cursor: pointer; transition: all 0.2s; }
   .chat-sys-badge:hover { border-color: var(--accent); color: var(--accent); }
+  .chat-group-tag { font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent); background: rgba(124,109,250,0.12); border: 1px solid rgba(124,109,250,0.25); padding: 3px 10px; border-radius: 999px; }
+  .chat-actions-bar { display: flex; gap: 6px; align-items: center; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
   .saved-prompt-item { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 10px; transition: border-color 0.15s; }
   .saved-prompt-item:hover { border-color: var(--border-bright); }
   .saved-prompt-info { flex: 1; min-width: 0; }
   .saved-prompt-name { font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .saved-prompt-preview { font-size: 0.72rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
   .save-dialog { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 0.9rem; margin-top: 0.75rem; }
+
+  /* ── LOBBY WAITING ── */
+  .lobby-waiting { text-align: center; padding: 2rem; }
+  .lobby-waiting-title { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .lobby-waiting-sub { font-size: 0.85rem; color: var(--text-muted); }
+  .waiting-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
+  .ai-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 0.68rem; font-family: var(--font-mono); padding: 2px 7px; border-radius: 999px; background: rgba(245,200,66,0.12); color: var(--gold); border: 1px solid rgba(245,200,66,0.25); }
 </style>
 </head>
 <body>
@@ -242,6 +263,7 @@
 <div class="orb orb2"></div>
 <div class="orb orb3"></div>
 
+<!-- API MODAL -->
 <div class="modal-overlay hidden" id="apiModal">
   <div class="modal">
     <div class="modal-title">⚙ API Configuration</div>
@@ -276,6 +298,7 @@
   </div>
 </div>
 
+<!-- SYS PROMPT MODAL -->
 <div class="modal-overlay hidden" id="sysPromptModal">
   <div class="modal">
     <div class="modal-title">🧠 Assistant Settings</div>
@@ -317,17 +340,37 @@
   </div>
 </div>
 
+<!-- ADD AI BOTS MODAL -->
+<div class="modal-overlay hidden" id="addBotsModal">
+  <div class="modal">
+    <div class="modal-title">🤖 Add AI Players</div>
+    <div class="modal-sub">Add demo AI players to fill the lobby. They won't use your API tokens — scores are simulated locally.</div>
+    <div class="field-group">
+      <label>Number of AI players</label>
+      <div class="range-row">
+        <input type="range" min="1" max="5" value="2" id="botCountSlider" oninput="document.getElementById('botCountVal').textContent=this.value" />
+        <span class="range-val" id="botCountVal">2</span>
+      </div>
+    </div>
+    <div style="background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.2);border-radius:var(--r);padding:0.75rem 1rem;font-size:0.82rem;color:var(--gold);margin-bottom:1rem;">
+      ⚡ AI players are clearly labelled in the lobby. Their scores are random — no API calls are made.
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary" onclick="confirmAddBots()">Add AI Players</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('addBotsModal').classList.add('hidden')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="app">
   <div class="header">
     <div class="logo">Quiz<span>Forge</span> AI</div>
     <button class="api-badge" id="apiBadge" onclick="openApiModal()">⚙ API Key</button>
   </div>
 
+  <!-- HOME -->
   <div class="screen active" id="screen-home">
-    <div class="hero-title">
-      Turn any document<br>
-      <span class="line2">into a quiz.</span>
-    </div>
+    <div class="hero-title">Turn any document<br><span class="line2">into a quiz.</span></div>
     <div class="hero-subtitle">Upload documents or text files. Let AI craft the perfect quiz. Challenge friends or go solo.</div>
     <div class="hero-actions">
       <button class="btn btn-primary" onclick="goTo('screen-setup')">⚡ Create a Quiz</button>
@@ -335,11 +378,11 @@
     </div>
     <div style="margin-top:2.5rem;">
       <div style="font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">AI Study Assistant</div>
-      <button class="ai-chat-btn" onclick="goTo('screen-chat')">
-        <div class="ai-chat-dot"></div>
+      <button class="ai-chat-btn" onclick="goTo('screen-chat')" style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);padding:1rem 1.4rem;cursor:pointer;transition:all 0.2s;width:100%;max-width:340px;text-align:left;">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0;"></div>
         <div>
-          <div class="ai-chat-label">Chat <span style="color:var(--accent);">with</span> AI</div>
-          <div class="ai-chat-sub">Ask questions, get explanations, brainstorm topics</div>
+          <div style="font-family:var(--font-head);font-size:1.2rem;font-weight:800;color:var(--text);">Chat <span style="color:var(--accent);">with</span> AI</div>
+          <div style="font-family:var(--font-body);font-size:0.9rem;color:var(--text-muted);line-height:1.6;">Ask questions, get explanations, brainstorm topics</div>
         </div>
         <span style="color:var(--accent);font-size:1.2rem;font-weight:bold;margin-left:auto;">→</span>
       </button>
@@ -347,34 +390,48 @@
     <div style="margin-top:2.5rem;">
       <div style="font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">Supported formats</div>
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
-        <div class="tag">📄 PDF</div>
-        <div class="tag">📝 Word (.docx)</div>
-        <div class="tag">📊 PowerPoint (.pptx)</div>
-        <div class="tag">🔤 Plain Text (.txt)</div>
-        <div class="tag">✍ Markdown (.md)</div>
+        <div class="tag">📄 PDF</div><div class="tag">📝 Word (.docx)</div><div class="tag">📊 PowerPoint (.pptx)</div><div class="tag">🔤 Plain Text (.txt)</div><div class="tag">✍ Markdown (.md)</div>
       </div>
     </div>
   </div>
 
+  <!-- CHAT -->
   <div class="screen" id="screen-chat">
-    <div class="chat-screen">
-      <div class="chat-header">
-        <button class="btn btn-ghost btn-sm" onclick="goTo('screen-home')">← Back</button>
-        <div class="chat-title" style="font-family:var(--font-head);font-weight:800;font-size:1.5rem;">
-          AI <span style="color:var(--accent);">Assistant</span>
+    <div class="chat-layout">
+      <!-- Sidebar -->
+      <div class="chat-sidebar">
+        <div class="sidebar-head">
+          <div class="sidebar-title">💬 Chats</div>
+          <button class="btn btn-ghost btn-sm" onclick="openNewGroupPrompt()" style="padding:4px 8px;font-size:0.8rem;" title="New group">+</button>
         </div>
-        <button class="chat-sys-badge" id="sysPromptBadge" onclick="openSysPromptModal()">⚙ System Prompt</button>
+        <div class="group-list" id="groupList"></div>
+        <div class="new-group-form" id="newGroupForm" style="display:none;">
+          <input type="text" id="newGroupInput" placeholder="Group name..." onkeydown="if(event.key==='Enter')confirmNewGroup();if(event.key==='Escape')closeNewGroupForm();" />
+          <button class="btn btn-primary btn-sm" onclick="confirmNewGroup()" style="padding:6px 10px;">✓</button>
+        </div>
       </div>
-      <div class="chat-messages" id="chatMessages">
-        <div class="chat-bubble bubble-ai">Hey! I'm your study assistant. Ask me anything — concepts, explanations, quiz practice, or just brainstorm a topic. 🎓</div>
-      </div>
-      <div class="chat-input-row">
-        <textarea id="chatInput" placeholder="Ask anything..." rows="1" onkeydown="chatKeyDown(event)" oninput="autoResizeChat(this)"></textarea>
-        <button class="chat-send" id="chatSendBtn" onclick="sendChatMessage()" title="Send">↑</button>
+      <!-- Main -->
+      <div class="chat-main">
+        <div class="chat-header">
+          <button class="btn btn-ghost btn-sm" onclick="goTo('screen-home')">← Back</button>
+          <div class="chat-title">AI <span style="color:var(--accent);">Assistant</span></div>
+          <span class="chat-group-tag" id="currentGroupTag">General</span>
+          <button class="chat-sys-badge" id="sysPromptBadge" onclick="openSysPromptModal()">⚙ System Prompt</button>
+        </div>
+        <div class="chat-actions-bar">
+          <button class="btn btn-ghost btn-sm" onclick="clearCurrentChat()" style="font-size:0.78rem;">🗑 Clear chat</button>
+          <button class="btn btn-ghost btn-sm" onclick="deleteCurrentGroup()" style="font-size:0.78rem;color:var(--danger);border-color:rgba(250,77,109,0.3);">✕ Delete group</button>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-row">
+          <textarea id="chatInput" placeholder="Ask anything..." rows="1" onkeydown="chatKeyDown(event)" oninput="autoResizeChat(this)"></textarea>
+          <button class="chat-send" id="chatSendBtn" onclick="sendChatMessage()" title="Send">↑</button>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- SETUP -->
   <div class="screen" id="screen-setup">
     <div class="steps">
       <div class="step active" id="step1"><div class="step-dot">1</div><div class="step-label">Upload</div></div>
@@ -387,7 +444,7 @@
     </div>
     <div id="sub-upload">
       <div class="section-title">Upload your materials</div>
-      <div class="section-sub">Add source documents to extract key concepts and generate questions from.</div>
+      <div class="section-sub">Add source documents to extract key concepts from.</div>
       <div class="upload-zone" id="dropzone" ondragover="handleDrag(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
         <input type="file" id="fileInput" multiple accept=".pdf,.docx,.pptx,.ppt,.txt,.md" onchange="handleFiles(this.files)" />
         <span class="upload-icon">📂</span>
@@ -445,7 +502,7 @@
     </div>
     <div id="sub-mode" class="hidden">
       <div class="section-title">Choose your mode</div>
-      <div class="section-sub">Play solo or invite friends for a live multiplayer battle.</div>
+      <div class="section-sub">Play solo or host a live multiplayer game.</div>
       <div class="mode-cards" style="margin-bottom:1.5rem;">
         <div class="mode-card selected" id="mode-solo" onclick="selectMode('solo')">
           <div class="mode-card-icon">🧘</div>
@@ -455,13 +512,13 @@
         <div class="mode-card" id="mode-multi" onclick="selectMode('multi')">
           <div class="mode-card-icon">⚔️</div>
           <div class="mode-card-title">Multiplayer</div>
-          <div class="mode-card-desc">Compete live with friends via a room code</div>
+          <div class="mode-card-desc">Host a live game — friends join with a code</div>
         </div>
       </div>
       <div id="multi-options" class="hidden card" style="margin-bottom:1.5rem;">
         <label>Your name (host)</label>
-        <input type="text" id="hostName" placeholder="Enter your name" value="Host" style="margin-bottom:1rem;" />
-        <div style="font-size:0.8rem;color:var(--text-muted);">A room code will be generated that friends can use to join.</div>
+        <input type="text" id="hostName" placeholder="Enter your name" value="Host" style="margin-bottom:0.5rem;" />
+        <div style="font-size:0.8rem;color:var(--text-muted);">A room code will be generated. Only you (as host) can start the quiz.</div>
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-primary" onclick="startGenerate()">⚡ Generate Quiz</button>
@@ -470,6 +527,7 @@
     </div>
   </div>
 
+  <!-- GENERATING -->
   <div class="screen" id="screen-generating">
     <div class="gen-state">
       <div class="gen-spinner"></div>
@@ -479,12 +537,14 @@
     </div>
   </div>
 
+  <!-- LOBBY (HOST) -->
   <div class="screen" id="screen-lobby">
     <div class="section-title">🎮 Game Lobby</div>
-    <div class="section-sub">Share the code below — quiz starts when you're ready!</div>
+    <div class="section-sub">Share the code with friends. Only you (host) can start the quiz.</div>
     <div class="lobby-code" id="lobbyCode">----</div>
-    <div style="text-align:center;margin-bottom:1.5rem;">
+    <div style="text-align:center;margin-bottom:1.5rem;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
       <button class="btn btn-secondary btn-sm" onclick="copyCode()">📋 Copy Code</button>
+      <button class="btn btn-secondary btn-sm" onclick="openAddBotsModal()">🤖 Add AI Players</button>
     </div>
     <div class="card" style="margin-bottom:1.5rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
@@ -492,13 +552,35 @@
         <span class="tag" id="playerCount">1 player</span>
       </div>
       <div class="players-list" id="playersList"></div>
+      <div style="font-size:0.78rem;color:var(--text-dim);margin-top:1rem;">Real players join using the code above. AI players are simulated locally and use no API tokens.</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary" onclick="startQuiz()">🚀 Start Quiz</button>
+      <button class="btn btn-primary" onclick="startQuiz()">🚀 Start Quiz for Everyone</button>
       <button class="btn btn-ghost" onclick="goTo('screen-home')">✕ Cancel</button>
     </div>
   </div>
 
+  <!-- LOBBY WAITING (non-host) -->
+  <div class="screen" id="screen-lobby-wait">
+    <div class="lobby-code" id="lobbyCodeWait">----</div>
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <label style="margin:0;">Players in lobby</label>
+        <span class="tag" id="playerCountWait">2 players</span>
+      </div>
+      <div class="players-list" id="playersListWait"></div>
+    </div>
+    <div class="lobby-waiting">
+      <div class="waiting-spinner"></div>
+      <div class="lobby-waiting-title">Waiting for host to start…</div>
+      <div class="lobby-waiting-sub">The host will start the quiz when everyone is ready. Hang tight!</div>
+    </div>
+    <div style="margin-top:1rem;">
+      <button class="btn btn-ghost" onclick="goTo('screen-home')">✕ Leave</button>
+    </div>
+  </div>
+
+  <!-- JOIN -->
   <div class="screen" id="screen-join">
     <div class="section-title">Join a Quiz</div>
     <div class="section-sub">Enter the room code and your name to join.</div>
@@ -518,6 +600,7 @@
     </div>
   </div>
 
+  <!-- QUIZ -->
   <div class="screen" id="screen-quiz">
     <div class="quiz-header">
       <div class="q-progress-wrap">
@@ -560,6 +643,7 @@
     </div>
   </div>
 
+  <!-- RESULTS -->
   <div class="screen" id="screen-results">
     <div class="score-hero">
       <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.1em;">Your Score</div>
@@ -602,6 +686,9 @@ const SYS_PRESETS = {
   none:     ''
 };
 
+const AI_BOT_NAMES = ['Alex AI', 'Sam Bot', 'Jordan AI', 'Morgan Bot', 'Riley AI', 'Casey Bot'];
+const COLORS = ['#7c6dfa','#fa6d9a','#6dfacc','#fac842','#fa9a6d','#6dacfa'];
+
 let apiKey   = localStorage.getItem('qf_key')   || '';
 let apiBase  = localStorage.getItem('qf_base')  || 'https://api.openai.com/v1';
 let apiModel = localStorage.getItem('qf_model') || 'gpt-4o-mini';
@@ -626,19 +713,122 @@ let timedOut = false;
 let gameMode = 'solo';
 let roomCode = '';
 let playerName = 'You';
+let isHost = false;
 let players = [];
 let difficulty = 'medium';
-let chatHistory = [];
 let chatStreaming = false;
 
-const COLORS = ['#7c6dfa','#fa6d9a','#6dfacc','#fac842','#fa9a6d','#6dacfa'];
+// ── CHAT GROUPS ──────────────────────────────────────────
+// Structure: { id, name, messages: [{role, content}], history: [{role,content}] }
+let chatGroups = JSON.parse(localStorage.getItem('qf_chatgroups') || 'null');
+if (!chatGroups || !chatGroups.length) {
+  chatGroups = [
+    { id: 'general', name: 'General', messages: [], history: [] },
+    { id: 'science', name: 'Science', messages: [], history: [] },
+    { id: 'history', name: 'History', messages: [], history: [] }
+  ];
+}
+let activeGroupId = chatGroups[0].id;
+
+function saveChatGroups() {
+  localStorage.setItem('qf_chatgroups', JSON.stringify(chatGroups));
+}
+
+function getActiveGroup() {
+  return chatGroups.find(g => g.id === activeGroupId) || chatGroups[0];
+}
+
+function renderGroupList() {
+  const el = document.getElementById('groupList');
+  el.innerHTML = chatGroups.map(g => `
+    <div class="group-item ${g.id === activeGroupId ? 'active' : ''}" onclick="switchGroup('${g.id}')">
+      <span style="font-size:0.9rem;">💬</span>
+      <span class="group-item-name">${escHtml(g.name)}</span>
+      <div class="group-item-actions">
+        <button class="group-action-btn" onclick="event.stopPropagation();deleteGroup('${g.id}')" title="Delete group">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function switchGroup(id) {
+  activeGroupId = id;
+  renderGroupList();
+  renderChatMessages();
+  document.getElementById('currentGroupTag').textContent = getActiveGroup().name;
+}
+
+function renderChatMessages() {
+  const msgs = document.getElementById('chatMessages');
+  const group = getActiveGroup();
+  if (!group.messages.length) {
+    msgs.innerHTML = '<div class="chat-bubble bubble-ai">Hey! I\'m your study assistant. Ask me anything — concepts, explanations, quiz practice, or just brainstorm a topic. 🎓</div>';
+    return;
+  }
+  msgs.innerHTML = group.messages.map(m => `<div class="chat-bubble ${m.role === 'user' ? 'bubble-user' : 'bubble-ai'}">${escHtml(m.content)}</div>`).join('');
+  scrollChatToBottom();
+}
+
+function clearCurrentChat() {
+  const group = getActiveGroup();
+  group.messages = [];
+  group.history = [];
+  saveChatGroups();
+  renderChatMessages();
+  toast('Chat cleared');
+}
+
+function deleteCurrentGroup() {
+  if (chatGroups.length <= 1) { toast("Can't delete the last group"); return; }
+  deleteGroup(activeGroupId);
+}
+
+function deleteGroup(id) {
+  const idx = chatGroups.findIndex(g => g.id === id);
+  if (idx === -1) return;
+  const wasActive = id === activeGroupId;
+  chatGroups.splice(idx, 1);
+  if (wasActive) activeGroupId = chatGroups[Math.max(0, idx - 1)].id;
+  saveChatGroups();
+  renderGroupList();
+  renderChatMessages();
+  document.getElementById('currentGroupTag').textContent = getActiveGroup().name;
+  toast('Group deleted');
+}
+
+function openNewGroupPrompt() {
+  const form = document.getElementById('newGroupForm');
+  form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+  if (form.style.display === 'flex') setTimeout(() => document.getElementById('newGroupInput').focus(), 50);
+}
+
+function closeNewGroupForm() {
+  document.getElementById('newGroupForm').style.display = 'none';
+}
+
+function confirmNewGroup() {
+  const name = document.getElementById('newGroupInput').value.trim();
+  if (!name) { toast('Enter a group name'); return; }
+  const id = 'g_' + Date.now();
+  chatGroups.push({ id, name, messages: [], history: [] });
+  document.getElementById('newGroupInput').value = '';
+  closeNewGroupForm();
+  saveChatGroups();
+  switchGroup(id);
+  renderGroupList();
+  toast('Group created: ' + name);
+}
 
 // ── NAVIGATION ────────────────────────────────────────────
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
-  if (id === 'screen-chat') setTimeout(() => scrollChatToBottom(), 50);
+  if (id === 'screen-chat') {
+    renderGroupList();
+    renderChatMessages();
+    document.getElementById('currentGroupTag').textContent = getActiveGroup().name;
+    setTimeout(() => scrollChatToBottom(), 50);
+  }
 }
 
 function nextStep(hide, show) {
@@ -674,11 +864,11 @@ function setProvider(name, updateInputs = true) {
     document.getElementById('apiModelInput').value = PROVIDERS[name].model;
   }
   const hints = {
-    openai:    'OpenAI-compatible. /chat/completions will be appended.',
+    openai: 'OpenAI-compatible. /chat/completions will be appended.',
     anthropic: '⚠ Anthropic uses a different auth header. Works if your endpoint is OpenAI-compatible.',
-    deepseek:  'DeepSeek is OpenAI-compatible — drop-in replacement.',
-    groq:      'Groq uses an OpenAI-compatible endpoint.',
-    custom:    'Any OpenAI-compatible base URL.'
+    deepseek: 'DeepSeek is OpenAI-compatible — drop-in replacement.',
+    groq: 'Groq uses an OpenAI-compatible endpoint.',
+    custom: 'Any OpenAI-compatible base URL.'
   };
   document.getElementById('baseHint').textContent = hints[name] || '';
 }
@@ -710,18 +900,16 @@ function openSysPromptModal() {
 }
 function closeSysPromptModal() { document.getElementById('sysPromptModal').classList.add('hidden'); }
 
-function setSysPreset(key) {
-  document.getElementById('sysPromptInput').value = SYS_PRESETS[key] || '';
-}
+function setSysPreset(key) { document.getElementById('sysPromptInput').value = SYS_PRESETS[key] || ''; }
 
 function saveSysPrompt() {
   sysPrompt = document.getElementById('sysPromptInput').value.trim();
   localStorage.setItem('qf_sysprompt', sysPrompt);
   closeSysPromptModal();
-  chatHistory = [];
-  const msgs = document.getElementById('chatMessages');
-  msgs.innerHTML = '<div class="chat-bubble bubble-ai">Hey! I\'m your study assistant. Ask me anything — concepts, explanations, quiz practice, or just brainstorm a topic. 🎓</div>';
-  toast('System prompt applied. Conversation reset.');
+  // Reset history for all groups
+  chatGroups.forEach(g => { g.history = []; });
+  saveChatGroups();
+  toast('System prompt applied. Conversation history reset.');
   updateSysBadge();
 }
 
@@ -738,11 +926,7 @@ function escHtml(str) {
 function renderSavedPrompts() {
   const list = document.getElementById('savedPromptsList');
   const empty = document.getElementById('noSavedPrompts');
-  if (!savedPrompts.length) {
-    list.innerHTML = '';
-    empty.style.display = 'block';
-    return;
-  }
+  if (!savedPrompts.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   list.innerHTML = savedPrompts.map((p, i) => `
     <div class="saved-prompt-item">
@@ -759,10 +943,7 @@ function toggleSaveDialog() {
   const d = document.getElementById('savePromptDialog');
   const isHidden = d.classList.contains('hidden');
   d.classList.toggle('hidden', !isHidden);
-  if (isHidden) {
-    document.getElementById('savePromptName').value = '';
-    setTimeout(() => document.getElementById('savePromptName').focus(), 50);
-  }
+  if (isHidden) { document.getElementById('savePromptName').value = ''; setTimeout(() => document.getElementById('savePromptName').focus(), 50); }
 }
 
 function confirmSavePrompt() {
@@ -777,18 +958,8 @@ function confirmSavePrompt() {
   toast('Saved: ' + name);
 }
 
-function loadSavedPrompt(i) {
-  document.getElementById('sysPromptInput').value = savedPrompts[i].text;
-  toast('Loaded: ' + savedPrompts[i].name);
-}
-
-function deleteSavedPrompt(i) {
-  const name = savedPrompts[i].name;
-  savedPrompts.splice(i, 1);
-  localStorage.setItem('qf_savedprompts', JSON.stringify(savedPrompts));
-  renderSavedPrompts();
-  toast('Deleted: ' + name);
-}
+function loadSavedPrompt(i) { document.getElementById('sysPromptInput').value = savedPrompts[i].text; toast('Loaded: ' + savedPrompts[i].name); }
+function deleteSavedPrompt(i) { const name = savedPrompts[i].name; savedPrompts.splice(i, 1); localStorage.setItem('qf_savedprompts', JSON.stringify(savedPrompts)); renderSavedPrompts(); toast('Deleted: ' + name); }
 
 // ── AI CHAT ───────────────────────────────────────────────
 function chatKeyDown(e) {
@@ -805,11 +976,15 @@ function scrollChatToBottom() {
   msgs.scrollTop = msgs.scrollHeight;
 }
 
-function appendBubble(role, text, id) {
+function appendBubble(role, text) {
   const msgs = document.getElementById('chatMessages');
+  // Remove greeting bubble if it's the first real message
+  const existing = msgs.querySelectorAll('.chat-bubble');
+  if (existing.length === 1 && existing[0].classList.contains('bubble-ai') && existing[0].textContent.startsWith('Hey!')) {
+    existing[0].remove();
+  }
   const div = document.createElement('div');
   div.className = 'chat-bubble ' + (role === 'user' ? 'bubble-user' : 'bubble-ai');
-  if (id) div.id = id;
   div.textContent = text;
   msgs.appendChild(div);
   scrollChatToBottom();
@@ -823,22 +998,27 @@ async function sendChatMessage() {
   if (!text) return;
   if (!apiKey) { openApiModal(); toast('Please configure your API key first'); return; }
 
+  const group = getActiveGroup();
   input.value = '';
   input.style.height = 'auto';
+
+  // Save user message
+  group.messages.push({ role: 'user', content: text });
+  group.history.push({ role: 'user', content: text });
+  saveChatGroups();
   appendBubble('user', text);
-  chatHistory.push({ role: 'user', content: text });
 
   chatStreaming = true;
   document.getElementById('chatSendBtn').disabled = true;
 
-  const thinkingId = 'think-' + Date.now();
-  const thinkingBubble = appendBubble('ai', '…', thinkingId);
+  const thinkingBubble = appendBubble('ai', '…');
   thinkingBubble.classList.add('thinking');
 
   try {
     const messages = [];
     if (sysPrompt) messages.push({ role: 'system', content: sysPrompt });
-    messages.push(...chatHistory);
+    messages.push(...group.history.slice(0, -1)); // history minus last (which we push next)
+    messages.push({ role: 'user', content: text });
 
     const res = await fetch(apiBase + '/chat/completions', {
       method: 'POST',
@@ -855,7 +1035,10 @@ async function sendChatMessage() {
     const reply = data.choices?.[0]?.message?.content || '(no response)';
     thinkingBubble.textContent = reply;
     thinkingBubble.classList.remove('thinking');
-    chatHistory.push({ role: 'assistant', content: reply });
+
+    group.messages.push({ role: 'assistant', content: reply });
+    group.history.push({ role: 'assistant', content: reply });
+    saveChatGroups();
   } catch(e) {
     thinkingBubble.textContent = '⚠ Error: ' + (e.message || 'Something went wrong.');
     thinkingBubble.classList.remove('thinking');
@@ -975,7 +1158,7 @@ async function startGenerate() {
     count: parseInt(document.getElementById('qCount').value),
     time: parseInt(document.getElementById('timePerQ').value),
     types, difficulty, mode: gameMode,
-    hostName: document.getElementById('hostName')?.value || 'Host'
+    hostName: document.getElementById('hostName')?.value.trim() || 'Host'
   };
 
   goTo('screen-generating');
@@ -994,7 +1177,7 @@ async function startGenerate() {
   } catch(e) {
     console.error(e);
     goTo('screen-setup');
-    toast('Error: ' + (e.message || 'Generation failed. Check your API key and endpoint.'));
+    toast('Error: ' + (e.message || 'Generation failed. Check your API key.'));
   }
 }
 
@@ -1043,36 +1226,58 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
   return parsed.questions || parsed;
 }
 
-// ── LOBBY ─────────────────────────────────────────────────
+// ── LOBBY (HOST) ──────────────────────────────────────────
 function setupLobby() {
   roomCode = Math.random().toString(36).substring(2,6).toUpperCase();
   playerName = quizConfig.hostName || 'Host';
-  players = [{ name: playerName, score: 0, color: COLORS[0], isHost: true }];
+  isHost = true;
+  // Only add the real host — no auto-bots
+  players = [{ name: playerName, score: 0, color: COLORS[0], isHost: true, isAI: false }];
   document.getElementById('lobbyCode').textContent = roomCode;
-  renderPlayers();
+  renderLobbyPlayers();
   goTo('screen-lobby');
-  simulateFriendsJoining();
 }
 
-function simulateFriendsJoining() {
-  const names = ['Alex','Sam','Jordan','Morgan','Riley'];
-  let idx = 0;
-  const interval = setInterval(() => {
-    if (idx >= names.length || players.length >= 5) { clearInterval(interval); return; }
-    players.push({ name: names[idx], score: 0, color: COLORS[players.length % COLORS.length] });
-    idx++;
-    renderPlayers();
-    document.getElementById('playerCount').textContent = players.length + ' players';
-  }, 1800);
+function openAddBotsModal() {
+  document.getElementById('addBotsModal').classList.remove('hidden');
 }
 
-function renderPlayers() {
+function confirmAddBots() {
+  const count = parseInt(document.getElementById('botCountSlider').value);
+  const existingBots = players.filter(p => p.isAI).length;
+  const toAdd = Math.min(count, 5 - existingBots); // max 5 total bots
+  const availNames = AI_BOT_NAMES.filter(n => !players.find(p => p.name === n));
+  for (let i = 0; i < toAdd && availNames.length > 0; i++) {
+    const name = availNames.shift();
+    players.push({ name, score: 0, color: COLORS[players.length % COLORS.length], isHost: false, isAI: true });
+  }
+  document.getElementById('addBotsModal').classList.add('hidden');
+  renderLobbyPlayers();
+  document.getElementById('playerCount').textContent = players.length + ' player' + (players.length !== 1 ? 's' : '');
+  toast(`Added ${toAdd} AI player${toAdd !== 1 ? 's' : ''}`);
+}
+
+function renderLobbyPlayers() {
   document.getElementById('playersList').innerHTML = players.map(p => `
     <div class="player-item">
       <div class="player-avatar" style="background:${p.color}22;color:${p.color};">${p.name[0]}</div>
-      <div class="player-name">${p.name}</div>
-      ${p.isHost ? '<span class="player-badge badge-host">Host</span>' : '<span class="player-badge badge-ready">Ready</span>'}
+      <div class="player-name">${escHtml(p.name)}</div>
+      ${p.isHost ? '<span class="player-badge badge-host">Host</span>' : ''}
+      ${p.isAI ? '<span class="ai-tag">🤖 AI</span>' : (!p.isHost ? '<span class="player-badge badge-ready">Ready</span>' : '')}
     </div>`).join('');
+  document.getElementById('playerCount').textContent = players.length + ' player' + (players.length !== 1 ? 's' : '');
+}
+
+function renderLobbyWaitPlayers() {
+  document.getElementById('playersListWait').innerHTML = players.map(p => `
+    <div class="player-item">
+      <div class="player-avatar" style="background:${p.color}22;color:${p.color};">${p.name[0]}</div>
+      <div class="player-name">${escHtml(p.name)}</div>
+      ${p.isHost ? '<span class="player-badge badge-host">Host</span>' : ''}
+      ${p.isAI ? '<span class="ai-tag">🤖 AI</span>' : (!p.isHost ? '<span class="player-badge badge-ready">Ready</span>' : '')}
+    </div>`).join('');
+  document.getElementById('playerCountWait').textContent = players.length + ' player' + (players.length !== 1 ? 's' : '');
+  document.getElementById('lobbyCodeWait').textContent = roomCode;
 }
 
 function copyCode() { navigator.clipboard.writeText(roomCode).then(() => toast('Code copied!')).catch(()=>{}); }
@@ -1080,6 +1285,12 @@ function copyCode() { navigator.clipboard.writeText(roomCode).then(() => toast('
 // ── QUIZ ──────────────────────────────────────────────────
 function startQuiz() {
   currentQ = 0; score = 0; correctCount = 0; wrongCount = 0; timeoutCount = 0; questionTimes = [];
+  // Make sure questions are loaded before going to quiz screen
+  if (!questions || !questions.length) {
+    toast('No questions loaded. Please generate a quiz first.');
+    goTo('screen-setup');
+    return;
+  }
   goTo('screen-quiz');
   document.getElementById('livePlayersStrip').classList.toggle('hidden', gameMode !== 'multi');
   if (gameMode === 'multi') renderLivePlayers();
@@ -1090,7 +1301,8 @@ function renderLivePlayers() {
   document.getElementById('livePlayers').innerHTML = players.map(p => `
     <div class="live-player">
       <div class="live-dot"></div>
-      <span>${p.name}</span>
+      <span>${escHtml(p.name)}</span>
+      ${p.isAI ? '<span class="ai-tag" style="font-size:0.6rem;padding:1px 5px;">AI</span>' : ''}
       <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--accent);">${p.score}</span>
     </div>`).join('');
 }
@@ -1100,6 +1312,7 @@ function showQuestion() {
   timedOut = false;
   selectedAnswers = [];
   const q = questions[currentQ];
+  if (!q) { showResults(); return; }
   timeLeft = quizConfig.time;
 
   document.getElementById('qNum').textContent = `Q${currentQ+1}`;
@@ -1124,10 +1337,10 @@ function showQuestion() {
     og.classList.add('hidden'); tw.classList.remove('hidden');
   } else {
     og.classList.remove('hidden'); tw.classList.add('hidden');
-    og.innerHTML = q.options.map((opt,i) => `
+    og.innerHTML = (q.options || []).map((opt,i) => `
       <button class="option" onclick="selectOption(${i})" id="opt-${i}">
         <span class="option-key">${String.fromCharCode(65+i)}</span>
-        <span>${opt}</span>
+        <span>${escHtml(opt)}</span>
       </button>`).join('');
   }
 
@@ -1164,7 +1377,6 @@ function submitAnswer(fromTimer = false) {
     const typed = document.getElementById('typeAnswerInput').value.trim().toLowerCase();
     const correct = (q.answer || '').toLowerCase();
     if (fromTimer) {
-      isCorrect = false;
       const fb = document.getElementById('typeFeedback');
       fb.className = 'type-feedback show timeout';
       fb.textContent = `⏰ Time's up! The answer was: "${q.answer}"`;
@@ -1176,8 +1388,8 @@ function submitAnswer(fromTimer = false) {
     }
   } else {
     const sorted = [...selectedAnswers].sort().join(',');
-    const correctSorted = [...q.correct].sort().join(',');
-    isCorrect = !fromTimer && sorted === correctSorted;
+    const correctSorted = [...(q.correct||[])].sort().join(',');
+    isCorrect = !fromTimer && sorted === correctSorted && selectedAnswers.length > 0;
     revealOptions(q, fromTimer);
     if (fromTimer) document.getElementById('timeoutBanner').classList.add('show');
   }
@@ -1186,7 +1398,7 @@ function submitAnswer(fromTimer = false) {
     const points = Math.max(10, Math.round(100 - (elapsed/quizConfig.time)*60));
     score += points;
     correctCount++;
-    if (gameMode === 'multi') simulateMultiScores();
+    if (gameMode === 'multi') simulateAIScores();
   } else if (fromTimer) {
     timeoutCount++;
   } else {
@@ -1194,7 +1406,7 @@ function submitAnswer(fromTimer = false) {
   }
 
   document.getElementById('qScore').textContent = `Score: ${score}`;
-  showExplanation(q.explanation);
+  if (q.explanation) showExplanation(q.explanation);
   document.getElementById('submitBtn').classList.add('hidden');
   document.getElementById('nextBtn').classList.remove('hidden');
   document.getElementById('nextBtn').textContent = currentQ < questions.length-1 ? 'Next →' : 'See Results';
@@ -1204,7 +1416,7 @@ function revealOptions(q, fromTimer) {
   document.querySelectorAll('.option').forEach((el,i) => {
     el.classList.add('revealed');
     el.style.pointerEvents = 'none';
-    if (q.correct.includes(i)) {
+    if ((q.correct||[]).includes(i)) {
       el.classList.add(fromTimer ? 'timed-out-correct' : 'correct');
     } else if (!fromTimer && selectedAnswers.includes(i)) {
       el.classList.add('wrong');
@@ -1248,11 +1460,14 @@ function updateTimerDisplay(t, total, circ, circLen) {
 
 function clearTimer() { clearInterval(timerInterval); timerInterval = null; }
 
-// ── MULTIPLAYER SIM ───────────────────────────────────────
-function simulateMultiScores() {
-  players.forEach((p,i) => {
-    if (i === 0) { p.score = score; return; }
-    p.score += Math.floor(Math.random()*80 + 20);
+// ── AI BOTS (no API calls) ────────────────────────────────
+// AI player scores are purely random local simulation — zero API tokens used
+function simulateAIScores() {
+  players.forEach((p, i) => {
+    if (i === 0) { p.score = score; return; } // index 0 = real player (host)
+    if (p.isAI) {
+      p.score += Math.floor(Math.random() * 80 + 20);
+    }
   });
   renderLivePlayers();
 }
@@ -1278,10 +1493,10 @@ function showResults() {
   const max = lbPlayers[0]?.score || 1;
   const rankEmoji = ['🥇','🥈','🥉'];
   document.getElementById('leaderboard').innerHTML = lbPlayers.map((p,i) => `
-    <div class="lb-item ${p.isMe||p.name===playerName?'me':''}">
+    <div class="lb-item ${p.isMe||(p.name===playerName&&!p.isAI)?'me':''}">
       <div class="lb-rank ${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':''}">${rankEmoji[i]||'#'+(i+1)}</div>
       <div style="flex:1;">
-        <div class="lb-name">${p.name}${p.isMe||p.name===playerName?' (You)':''}</div>
+        <div class="lb-name">${escHtml(p.name)}${p.isMe||(p.name===playerName&&!p.isAI)?' <span style="color:var(--text-muted);font-size:0.8rem;">(You)</span>':''}${p.isAI?' <span class="ai-tag" style="font-size:0.65rem;padding:1px 6px;vertical-align:middle;">AI</span>':''}</div>
         <div class="lb-bar"><div class="lb-bar-fill" style="width:${Math.round((p.score/max)*100)}%"></div></div>
       </div>
       <div class="lb-score">${p.score} pts</div>
@@ -1293,17 +1508,24 @@ function retakeQuiz() { startQuiz(); }
 
 // ── JOIN ──────────────────────────────────────────────────
 function joinGame() { goTo('screen-join'); }
+
 function confirmJoin() {
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   const name = document.getElementById('joinName').value.trim();
   if (!code || !name) { toast('Fill in both fields'); return; }
-  toast('Joined room ' + code + '! (Demo mode)');
+  toast('Joined room ' + code + '! (Demo mode — questions loaded when host starts)');
   playerName = name;
-  players = [{ name: 'Host', score: 0, color: COLORS[0], isHost: true }, { name, score: 0, color: COLORS[1] }];
-  document.getElementById('lobbyCode').textContent = code;
-  renderPlayers();
-  document.getElementById('playerCount').textContent = '2 players';
-  goTo('screen-lobby');
+  isHost = false;
+  roomCode = code;
+  // Simulate being in a lobby — in real implementation this would connect to the host
+  players = [
+    { name: 'Host', score: 0, color: COLORS[0], isHost: true, isAI: false },
+    { name, score: 0, color: COLORS[1], isHost: false, isAI: false }
+  ];
+  renderLobbyWaitPlayers();
+  goTo('screen-lobby-wait');
+  // Simulate host starting after delay (demo)
+  // In a real P2P/server implementation, this would be event-driven
 }
 
 // ── UTILS ─────────────────────────────────────────────────
@@ -1322,4 +1544,3 @@ updateSysBadge();
 </script>
 </body>
 </html>
-```
