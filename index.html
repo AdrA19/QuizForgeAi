@@ -698,7 +698,7 @@ function saveApiKey() {
 
 function updateBadge() {
   const badge = document.getElementById('apiBadge');
-  badge.textContent = apiKey ? `✓ ${currentProvider.charAt(0).toUpperCase()+currentProvider.slice(1)}` : '⚙ API Key';
+  badge.textContent = apiKey ? `${currentProvider.charAt(0).toUpperCase()+currentProvider.slice(1)} ✓` : '⚙ API Key';
 }
 
 // ── SYSTEM PROMPT MODAL ───────────────────────────────────
@@ -727,7 +727,7 @@ function saveSysPrompt() {
 
 function updateSysBadge() {
   const badge = document.getElementById('sysPromptBadge');
-  badge.textContent = '⚙ System Prompt';
+  badge.textContent = sysPrompt ? '⚙ System Prompt ✓' : '⚙ System Prompt';
 }
 
 // ── SAVED PROMPTS ─────────────────────────────────────────
