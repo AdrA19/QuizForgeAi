@@ -209,6 +209,7 @@
   /* ── CHAT SCREEN ── */
   .chat-layout { display: flex; height: calc(100vh - 120px); min-height: 500px; gap: 0; }
   .chat-sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid var(--border); padding-right: 1rem; margin-right: 1rem; }
+  .chat-sidebar.hidden { display: none !important; }
   @media(max-width:700px){ .chat-sidebar { display: none; } }
   .sidebar-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 0.75rem; }
   .sidebar-title { font-family: var(--font-head); font-size: 0.9rem; font-weight: 700; }
@@ -364,7 +365,7 @@
 
 <div class="app">
   <div class="header">
-    <div class="logo">Quiz<span>Forge</span> AI</div>
+    <div class="logo" style="cursor:pointer;" onclick="goTo('screen-home')">Quiz<span>Forge</span> AI</div>
     <button class="api-badge" id="apiBadge" onclick="openApiModal()">⚙ API Key</button>
   </div>
 
@@ -377,7 +378,7 @@
       <button class="btn btn-secondary" onclick="joinGame()">🎮 Join with Code</button>
     </div>
     <div style="margin-top:2.5rem;">
-      <div style="font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">AI Study Assistant</div>
+      <div style="font-family:var(--font-head);font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">AI Study Assistant</div>
       <button class="ai-chat-btn" onclick="goTo('screen-chat')" style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);padding:1rem 1.4rem;cursor:pointer;transition:all 0.2s;width:100%;max-width:340px;text-align:left;">
         <div style="width:10px;height:10px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0;"></div>
         <div>
@@ -399,7 +400,16 @@
   <div class="screen" id="screen-chat">
     <div class="chat-layout">
       <!-- Sidebar -->
-      <div class="chat-sidebar">
+      <button 
+        class="btn btn-ghost btn-sm"
+        id="sidebarToggleBtn"
+        style="margin-bottom:8px; margin-right:8px; display:none;"
+        onclick="toggleSidebar()"
+        title="Show Groups Sidebar"
+      >
+        ≡
+      </button>
+      <div class="chat-sidebar" id="chatSidebar">
         <div class="sidebar-head">
           <div class="sidebar-title">💬 Chats</div>
           <button class="btn btn-ghost btn-sm" onclick="openNewGroupPrompt()" style="padding:4px 8px;font-size:0.8rem;" title="New group">+</button>
@@ -471,9 +481,14 @@
         <div class="card">
           <label>Time per question (seconds)</label>
           <div class="range-row">
-            <input type="range" min="10" max="120" step="5" value="30" id="timePerQ" oninput="document.getElementById('timeVal').textContent=this.value+'s'" />
+            <input type="range" min="10" max="120" step="5" value="30" id="timePerQ"
+              oninput="document.getElementById('noTimerCheck').checked = false; toggleNoTimer(); document.getElementById('timeVal').textContent=this.value+'s';" />
             <span class="range-val" id="timeVal">30s</span>
           </div>
+          <label style="display:flex;align-items:center;gap:6px;font-weight:400;margin-top:0.6rem;font-size:0.92em;">
+            <input type="checkbox" id="noTimerCheck" onclick="toggleNoTimer()" style="width:18px;height:18px;">
+            No Timer (Unlimited time)
+          </label>
         </div>
         <div class="card" style="grid-column:1/-1;">
           <label>Question types</label>
@@ -717,6 +732,47 @@ let isHost = false;
 let players = [];
 let difficulty = 'medium';
 let chatStreaming = false;
+let noTimer = false; // No timer global
+
+// ---- GAME SESSION PERSISTENCE ----
+function saveGameSession() {
+  const session = {
+    uploadedFiles, quizConfig, questions, currentQ, score, correctCount, wrongCount,
+    timeoutCount, questionTimes, selectedAnswers, answered, timedOut, gameMode,
+    roomCode, playerName, isHost, players, difficulty, noTimer
+  };
+  localStorage.setItem('qf_gamestate', JSON.stringify(session));
+}
+
+function loadGameSession() {
+  const s = localStorage.getItem('qf_gamestate');
+  if (!s) return;
+  try {
+    const session = JSON.parse(s);
+    if (!session) return;
+    uploadedFiles = session.uploadedFiles || [];
+    quizConfig = session.quizConfig || {};
+    questions = session.questions || [];
+    currentQ = session.currentQ || 0;
+    score = session.score || 0;
+    correctCount = session.correctCount || 0;
+    wrongCount = session.wrongCount || 0;
+    timeoutCount = session.timeoutCount || 0;
+    questionTimes = session.questionTimes || [];
+    selectedAnswers = session.selectedAnswers || [];
+    answered = !!session.answered;
+    timedOut = !!session.timedOut;
+    gameMode = session.gameMode || 'solo';
+    roomCode = session.roomCode || '';
+    playerName = session.playerName || 'You';
+    isHost = !!session.isHost;
+    players = session.players || [];
+    difficulty = session.difficulty || 'medium';
+    noTimer = !!session.noTimer;
+  } catch (e) {}
+}
+
+loadGameSession();
 
 // ── CHAT GROUPS ──────────────────────────────────────────
 // Structure: { id, name, messages: [{role, content}], history: [{role,content}] }
@@ -829,6 +885,25 @@ function goTo(id) {
     document.getElementById('currentGroupTag').textContent = getActiveGroup().name;
     setTimeout(() => scrollChatToBottom(), 50);
   }
+}
+
+function toggleNoTimer() {
+  const cb = document.getElementById('noTimerCheck');
+  if (!cb) return;
+  noTimer = cb.checked;
+  const timePerQ = document.getElementById('timePerQ');
+  const timeVal = document.getElementById('timeVal');
+  if (timePerQ && timeVal) {
+    if (noTimer) {
+      timePerQ.disabled = true;
+      timeVal.textContent = '∞';
+    } else {
+      timePerQ.disabled = false;
+      timeVal.textContent = timePerQ.value + 's';
+    }
+  }
+  quizConfig.noTimer = noTimer;
+  saveGameSession();
 }
 
 function nextStep(hide, show) {
@@ -1154,12 +1229,18 @@ async function startGenerate() {
   if (document.getElementById('typeTyping').checked) types.push('typing');
   if (!types.length) { toast('Select at least one question type'); return; }
 
+  quizConfig.noTimer = !!document.getElementById('noTimerCheck')?.checked;
+  noTimer = quizConfig.noTimer;
+
   quizConfig = {
     count: parseInt(document.getElementById('qCount').value),
-    time: parseInt(document.getElementById('timePerQ').value),
+    noTimer,
+    timePerQ: noTimer ? 0 : Number(document.getElementById('timePerQ').value),
+    time: noTimer ? 0 : Number(document.getElementById('timePerQ').value),
     types, difficulty, mode: gameMode,
     hostName: document.getElementById('hostName')?.value.trim() || 'Host'
   };
+  saveGameSession();
 
   goTo('screen-generating');
   setProgress(10, 'Reading your documents…');
@@ -1235,6 +1316,8 @@ function setupLobby() {
   players = [{ name: playerName, score: 0, color: COLORS[0], isHost: true, isAI: false }];
   document.getElementById('lobbyCode').textContent = roomCode;
   renderLobbyPlayers();
+  renderPlayersList();
+  saveGameSession();
   goTo('screen-lobby');
 }
 
@@ -1253,8 +1336,24 @@ function confirmAddBots() {
   }
   document.getElementById('addBotsModal').classList.add('hidden');
   renderLobbyPlayers();
+  renderPlayersList();
+  saveGameSession();
   document.getElementById('playerCount').textContent = players.length + ' player' + (players.length !== 1 ? 's' : '');
   toast(`Added ${toAdd} AI player${toAdd !== 1 ? 's' : ''}`);
+}
+
+function renderPlayersList() {
+  const root = document.getElementById('playersList');
+  if (!root) return;
+  if (!players.length) { root.innerHTML = "<div>No players yet.</div>"; return; }
+  root.innerHTML = players.map((player, i) => `
+    <div class="player-item">
+      <div class="player-avatar" style="background: ${COLORS[i % COLORS.length]}">${escHtml((player.name || '?')[0] || '?')}</div>
+      <div class="player-name">${escHtml(player.name)}</div>
+      ${player.isHost ? '<div class="player-badge badge-host">Host</div>' : ''}
+      ${player.isAI ? '<div class="player-badge badge-ai">AI</div>' : ''}
+    </div>
+  `).join('');
 }
 
 function renderLobbyPlayers() {
@@ -1284,6 +1383,9 @@ function copyCode() { navigator.clipboard.writeText(roomCode).then(() => toast('
 
 // ── QUIZ ──────────────────────────────────────────────────
 function startQuiz() {
+  if (gameMode === 'multi' && isHost) {
+    localStorage.setItem('qf_game_started', Date.now()); // notify other tabs/clients
+  }
   currentQ = 0; score = 0; correctCount = 0; wrongCount = 0; timeoutCount = 0; questionTimes = [];
   // Make sure questions are loaded before going to quiz screen
   if (!questions || !questions.length) {
@@ -1295,6 +1397,7 @@ function startQuiz() {
   document.getElementById('livePlayersStrip').classList.toggle('hidden', gameMode !== 'multi');
   if (gameMode === 'multi') renderLivePlayers();
   showQuestion();
+  saveGameSession();
 }
 
 function renderLivePlayers() {
@@ -1313,7 +1416,7 @@ function showQuestion() {
   selectedAnswers = [];
   const q = questions[currentQ];
   if (!q) { showResults(); return; }
-  timeLeft = quizConfig.time;
+  timeLeft = (quizConfig && (quizConfig.noTimer || noTimer)) ? 0 : quizConfig.time;
 
   document.getElementById('qNum').textContent = `Q${currentQ+1}`;
   document.getElementById('qLabel').textContent = `Question ${currentQ+1} of ${questions.length}`;
@@ -1440,6 +1543,18 @@ function nextQuestion() {
 
 // ── TIMER ─────────────────────────────────────────────────
 function startTimer() {
+  if (noTimer || (quizConfig && quizConfig.noTimer)) {
+    const ring = document.querySelector('.timer-ring');
+    if (ring) ring.style.visibility = 'hidden';
+    document.getElementById('timerVal').textContent = '∞';
+    timeLeft = null;
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+    return;
+  } else {
+    const ring = document.querySelector('.timer-ring');
+    if (ring) ring.style.visibility = 'visible';
+  }
   const total = quizConfig.time;
   const circ = document.getElementById('timerCircle');
   const circLen = 138.2;
@@ -1523,6 +1638,8 @@ function confirmJoin() {
     { name, score: 0, color: COLORS[1], isHost: false, isAI: false }
   ];
   renderLobbyWaitPlayers();
+  renderPlayersList();
+  saveGameSession();
   goTo('screen-lobby-wait');
   // Simulate host starting after delay (demo)
   // In a real P2P/server implementation, this would be event-driven
@@ -1541,6 +1658,58 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 updateBadge();
 updateSysBadge();
+
+// Chat sidebar toggle (mobile)
+function toggleSidebar() {
+  const sb = document.getElementById('chatSidebar');
+  const btn = document.getElementById('sidebarToggleBtn');
+  if (!sb || !btn) return;
+  if (sb.classList.contains('hidden')) {
+    sb.classList.remove('hidden');
+    btn.style.display = 'none';
+  } else {
+    sb.classList.add('hidden');
+    btn.style.display = '';
+  }
+}
+
+window.addEventListener('resize', checkSidebarToggle);
+function checkSidebarToggle() {
+  const sb = document.getElementById('chatSidebar');
+  const btn = document.getElementById('sidebarToggleBtn');
+  if (!sb || !btn) return;
+  if (window.innerWidth <= 700) {
+    sb.classList.add('hidden');
+    btn.style.display = '';
+  } else {
+    sb.classList.remove('hidden');
+    btn.style.display = 'none';
+  }
+}
+checkSidebarToggle();
+
+// Multiplayer start sync across tabs
+window.addEventListener('storage', (event) => {
+  if (event.key === 'qf_game_started') {
+    // If in lobby, switch to quiz on all non-hosts
+    const lobbyWait = document.getElementById('screen-lobby-wait');
+    if (lobbyWait && lobbyWait.classList.contains('active')) {
+      loadGameSession();
+      renderPlayersList();
+      goTo('screen-quiz');
+      if (!isHost) startQuiz();
+    }
+  }
+});
+
+// Restore UI on reload
+try {
+  if (document.getElementById('noTimerCheck')) {
+    document.getElementById('noTimerCheck').checked = !!(quizConfig && quizConfig.noTimer) || !!noTimer;
+    toggleNoTimer();
+  }
+  renderPlayersList();
+} catch (e) {}
 </script>
 </body>
 </html>
