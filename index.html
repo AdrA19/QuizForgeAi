@@ -1,3 +1,6 @@
+Here's the complete updated file:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -205,14 +208,11 @@
   .provider-pill { font-size: 0.75rem; font-family: var(--font-mono); padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface2); color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
   .provider-pill:hover { border-color: var(--accent); color: var(--accent); }
   .provider-pill.active { border-color: var(--accent); background: rgba(124,109,250,0.12); color: var(--accent); }
-
-  /* ── AI ASSISTANT ── */
   .ai-chat-btn { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1rem 1.4rem; cursor: pointer; transition: all 0.2s; width: 100%; max-width: 340px; text-align: left; }
   .ai-chat-btn:hover { border-color: var(--accent); background: rgba(124,109,250,0.06); }
   .ai-chat-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; flex-shrink: 0; }
   .ai-chat-label { font-family: var(--font-head); font-size: 1.2rem; font-weight: 800; color: var(--text); }
   .ai-chat-sub { font-family: var(--font-body); font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
-
   .chat-screen { display: flex; flex-direction: column; height: calc(100vh - 120px); min-height: 500px; }
   .chat-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
   .chat-title { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; flex: 1; }
@@ -230,7 +230,13 @@
   .chat-send:hover { background: #9484fc; }
   .chat-send:disabled { opacity: 0.4; pointer-events: none; }
   .chat-sys-badge { font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-dim); background: var(--surface3); border-radius: 999px; padding: 2px 10px; cursor: pointer; transition: all 0.15s; }
-  .chat-sys-badge:hover { color: var(--accent); border-color: var(--accent); }
+  .chat-sys-badge:hover { color: var(--accent); }
+  .saved-prompt-item { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 10px; transition: border-color 0.15s; }
+  .saved-prompt-item:hover { border-color: var(--border-bright); }
+  .saved-prompt-info { flex: 1; min-width: 0; }
+  .saved-prompt-name { font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .saved-prompt-preview { font-size: 0.72rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .save-dialog { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 0.9rem; margin-top: 0.75rem; }
 </style>
 </head>
 <body>
@@ -264,7 +270,7 @@
     </div>
     <div class="field-group">
       <label>API Key</label>
-      <input type="password" id="apiKeyInput" placeholder="sk-... />
+      <input type="password" id="apiKeyInput" placeholder="sk-..." />
     </div>
     <div style="margin-top:1.2rem;display:flex;gap:8px;">
       <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
@@ -279,11 +285,11 @@
     <div class="modal-sub">Customize the AI assistant's personality and behaviour.</div>
     <div class="field-group">
       <label>System Prompt</label>
-      <textarea id="sysPromptInput" rows="8" placeholder="You are a helpful study assistant. You help students understand concepts, quiz them, and explain topics clearly..."></textarea>
+      <textarea id="sysPromptInput" rows="7" placeholder="You are a helpful study assistant..."></textarea>
       <div class="hint">This is sent at the start of every conversation. Leave blank for the default.</div>
     </div>
     <div class="field-group" style="margin-top:0.5rem;">
-      <label>Presets</label>
+      <label>Quick Presets</label>
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:0.4rem;">
         <button class="btn btn-ghost btn-sm" onclick="setSysPreset('study')">📚 Study Helper</button>
         <button class="btn btn-ghost btn-sm" onclick="setSysPreset('socratic')">🤔 Socratic Tutor</button>
@@ -291,8 +297,24 @@
         <button class="btn btn-ghost btn-sm" onclick="setSysPreset('none')">✕ Clear</button>
       </div>
     </div>
+    <div class="field-group" style="margin-top:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+        <label style="margin:0;">Saved Prompts</label>
+        <button class="btn btn-ghost btn-sm" onclick="toggleSaveDialog()" style="font-size:0.78rem;">+ Save Current</button>
+      </div>
+      <div id="savePromptDialog" class="save-dialog hidden">
+        <label>Name this prompt</label>
+        <div style="display:flex;gap:8px;margin-top:0.4rem;">
+          <input type="text" id="savePromptName" placeholder="e.g. History Tutor" style="flex:1;" onkeydown="if(event.key==='Enter')confirmSavePrompt()" />
+          <button class="btn btn-primary btn-sm" onclick="confirmSavePrompt()">Save</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleSaveDialog()">✕</button>
+        </div>
+      </div>
+      <div id="savedPromptsList" style="display:flex;flex-direction:column;gap:6px;margin-top:0.5rem;max-height:200px;overflow-y:auto;"></div>
+      <div id="noSavedPrompts" style="font-size:0.8rem;color:var(--text-dim);padding:0.4rem 0;">No saved prompts yet.</div>
+    </div>
     <div style="margin-top:1.2rem;display:flex;gap:8px;">
-      <button class="btn btn-primary" onclick="saveSysPrompt()">Save</button>
+      <button class="btn btn-primary" onclick="saveSysPrompt()">Apply</button>
       <button class="btn btn-ghost" onclick="closeSysPromptModal()">Cancel</button>
     </div>
   </div>
@@ -304,7 +326,7 @@
     <button class="api-badge" id="apiBadge" onclick="openApiModal()">⚙ API Key</button>
   </div>
 
-<div class="screen active" id="screen-home">
+  <div class="screen active" id="screen-home">
     <div class="hero-title">
       Turn any document<br>
       <span class="line2">into a quiz.</span>
@@ -314,20 +336,17 @@
       <button class="btn btn-primary" onclick="goTo('screen-setup')">⚡ Create a Quiz</button>
       <button class="btn btn-secondary" onclick="joinGame()">🎮 Join with Code</button>
     </div>
-
     <div style="margin-top:2.5rem;">
       <div style="font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">AI Study Assistant</div>
       <button class="ai-chat-btn" onclick="goTo('screen-chat')">
         <div class="ai-chat-dot"></div>
         <div>
-          <!-- Wrapped only "AI" in a span with the purple color variable -->
-          <div class="ai-chat-label">Chat <span style="color: var(--accent);">with</span> AI</div>
+          <div class="ai-chat-label">Chat <span style="color:var(--accent);">with</span> AI</div>
           <div class="ai-chat-sub">Ask questions, get explanations, brainstorm topics</div>
         </div>
         <span style="color:var(--accent);font-size:1.2rem;font-weight:bold;margin-left:auto;">→</span>
       </button>
     </div>
-
     <div style="margin-top:2.5rem;">
       <div style="font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">Supported formats</div>
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
@@ -340,16 +359,13 @@
     </div>
   </div>
 
-<div class="screen" id="screen-chat">
+  <div class="screen" id="screen-chat">
     <div class="chat-screen">
       <div class="chat-header">
         <button class="btn btn-ghost btn-sm" onclick="goTo('screen-home')">← Back</button>
-        
-        <!-- Updated with your Syne font and purple accent -->
-        <div class="chat-title" style="font-family: var(--font-head); font-weight: 800; font-size: 1.5rem; text-transform: none;">
-          AI <span style="color: var(--accent);">Assistant</span>
+        <div class="chat-title" style="font-family:var(--font-head);font-weight:800;font-size:1.5rem;">
+          AI <span style="color:var(--accent);">Assistant</span>
         </div>
-        
         <button class="chat-sys-badge" id="sysPromptBadge" onclick="openSysPromptModal()">⚙ System Prompt</button>
       </div>
       <div class="chat-messages" id="chatMessages">
@@ -361,8 +377,6 @@
       </div>
     </div>
   </div>
-
-
 
   <div class="screen" id="screen-setup">
     <div class="steps">
@@ -596,6 +610,7 @@ let apiBase  = localStorage.getItem('qf_base')  || 'https://api.openai.com/v1';
 let apiModel = localStorage.getItem('qf_model') || 'gpt-4o-mini';
 let currentProvider = localStorage.getItem('qf_provider') || 'openai';
 let sysPrompt = localStorage.getItem('qf_sysprompt') || SYS_PRESETS.study;
+let savedPrompts = JSON.parse(localStorage.getItem('qf_savedprompts') || '[]');
 
 let uploadedFiles = [];
 let quizConfig = {};
@@ -626,9 +641,7 @@ function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
-  if (id === 'screen-chat') {
-    setTimeout(() => scrollChatToBottom(), 50);
-  }
+  if (id === 'screen-chat') setTimeout(() => scrollChatToBottom(), 50);
 }
 
 function nextStep(hide, show) {
@@ -695,6 +708,8 @@ function updateBadge() {
 function openSysPromptModal() {
   document.getElementById('sysPromptInput').value = sysPrompt;
   document.getElementById('sysPromptModal').classList.remove('hidden');
+  document.getElementById('savePromptDialog').classList.add('hidden');
+  renderSavedPrompts();
 }
 function closeSysPromptModal() { document.getElementById('sysPromptModal').classList.add('hidden'); }
 
@@ -709,13 +724,73 @@ function saveSysPrompt() {
   chatHistory = [];
   const msgs = document.getElementById('chatMessages');
   msgs.innerHTML = '<div class="chat-bubble bubble-ai">Hey! I\'m your study assistant. Ask me anything — concepts, explanations, quiz practice, or just brainstorm a topic. 🎓</div>';
-  toast('System prompt saved. Conversation reset.');
+  toast('System prompt applied. Conversation reset.');
   updateSysBadge();
 }
 
 function updateSysBadge() {
   const badge = document.getElementById('sysPromptBadge');
   badge.textContent = sysPrompt ? '⚙ System Prompt ✓' : '⚙ System Prompt';
+}
+
+// ── SAVED PROMPTS ─────────────────────────────────────────
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderSavedPrompts() {
+  const list = document.getElementById('savedPromptsList');
+  const empty = document.getElementById('noSavedPrompts');
+  if (!savedPrompts.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = savedPrompts.map((p, i) => `
+    <div class="saved-prompt-item">
+      <div class="saved-prompt-info">
+        <div class="saved-prompt-name">${escHtml(p.name)}</div>
+        <div class="saved-prompt-preview">${escHtml(p.text.slice(0, 90))}${p.text.length > 90 ? '…' : ''}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="loadSavedPrompt(${i})" style="flex-shrink:0;font-size:0.78rem;padding:4px 10px;">Load</button>
+      <button class="btn btn-ghost btn-sm" onclick="deleteSavedPrompt(${i})" style="flex-shrink:0;font-size:0.78rem;padding:4px 10px;color:var(--danger);border-color:rgba(250,77,109,0.3);">✕</button>
+    </div>`).join('');
+}
+
+function toggleSaveDialog() {
+  const d = document.getElementById('savePromptDialog');
+  const isHidden = d.classList.contains('hidden');
+  d.classList.toggle('hidden', !isHidden);
+  if (isHidden) {
+    document.getElementById('savePromptName').value = '';
+    setTimeout(() => document.getElementById('savePromptName').focus(), 50);
+  }
+}
+
+function confirmSavePrompt() {
+  const name = document.getElementById('savePromptName').value.trim();
+  const text = document.getElementById('sysPromptInput').value.trim();
+  if (!name) { toast('Enter a name for this prompt'); return; }
+  if (!text) { toast('Prompt text is empty'); return; }
+  savedPrompts.push({ name, text });
+  localStorage.setItem('qf_savedprompts', JSON.stringify(savedPrompts));
+  document.getElementById('savePromptDialog').classList.add('hidden');
+  renderSavedPrompts();
+  toast('Saved: ' + name);
+}
+
+function loadSavedPrompt(i) {
+  document.getElementById('sysPromptInput').value = savedPrompts[i].text;
+  toast('Loaded: ' + savedPrompts[i].name);
+}
+
+function deleteSavedPrompt(i) {
+  const name = savedPrompts[i].name;
+  savedPrompts.splice(i, 1);
+  localStorage.setItem('qf_savedprompts', JSON.stringify(savedPrompts));
+  renderSavedPrompts();
+  toast('Deleted: ' + name);
 }
 
 // ── AI CHAT ───────────────────────────────────────────────
@@ -1107,9 +1182,7 @@ function submitAnswer(fromTimer = false) {
     const correctSorted = [...q.correct].sort().join(',');
     isCorrect = !fromTimer && sorted === correctSorted;
     revealOptions(q, fromTimer);
-    if (fromTimer) {
-      document.getElementById('timeoutBanner').classList.add('show');
-    }
+    if (fromTimer) document.getElementById('timeoutBanner').classList.add('show');
   }
 
   if (isCorrect) {
@@ -1252,3 +1325,4 @@ updateSysBadge();
 </script>
 </body>
 </html>
+```
