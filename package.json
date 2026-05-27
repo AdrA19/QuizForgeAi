@@ -1,0 +1,12 @@
+{
+  "name": "quizforge-ai-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "QuizForge AI multiplayer WebSocket backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}
+
