@@ -210,7 +210,6 @@
   .chat-layout { display: flex; height: calc(100vh - 120px); min-height: 500px; gap: 0; }
   .chat-sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid var(--border); padding-right: 1rem; margin-right: 1rem; }
   .chat-sidebar.hidden { display: none !important; }
-  @media(max-width:700px){ .chat-sidebar { display: none; } }
   .sidebar-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 0.75rem; }
   .sidebar-title { font-family: var(--font-head); font-size: 0.9rem; font-weight: 700; }
   .group-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
@@ -226,7 +225,7 @@
   .new-group-form input { flex: 1; padding: 6px 10px; font-size: 0.8rem; }
   .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .chat-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
-  .chat-title { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; flex: 1; }
+  .chat-title { font-family: var(--font-head); font-size: 1.2rem; font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; flex: 1; }
   .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; padding: 0.5rem 0 1rem; scrollbar-width: thin; scrollbar-color: var(--surface3) transparent; }
   .chat-messages::-webkit-scrollbar { width: 4px; }
   .chat-messages::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 2px; }
@@ -403,7 +402,7 @@
       <button 
         class="btn btn-ghost btn-sm"
         id="sidebarToggleBtn"
-        style="margin-bottom:8px; margin-right:8px; display:none;"
+        style="margin-bottom:8px; margin-right:8px;"
         onclick="toggleSidebar()"
         title="Show Groups Sidebar"
       >
@@ -1659,7 +1658,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 updateBadge();
 updateSysBadge();
 
-// Chat sidebar toggle (mobile)
+// Chat sidebar toggle
 function toggleSidebar() {
   const sb = document.getElementById('chatSidebar');
   const btn = document.getElementById('sidebarToggleBtn');
@@ -1672,21 +1671,6 @@ function toggleSidebar() {
     btn.style.display = '';
   }
 }
-
-window.addEventListener('resize', checkSidebarToggle);
-function checkSidebarToggle() {
-  const sb = document.getElementById('chatSidebar');
-  const btn = document.getElementById('sidebarToggleBtn');
-  if (!sb || !btn) return;
-  if (window.innerWidth <= 700) {
-    sb.classList.add('hidden');
-    btn.style.display = '';
-  } else {
-    sb.classList.remove('hidden');
-    btn.style.display = 'none';
-  }
-}
-checkSidebarToggle();
 
 // Multiplayer start sync across tabs
 window.addEventListener('storage', (event) => {
