@@ -733,6 +733,124 @@ let difficulty = 'medium';
 let chatStreaming = false;
 let noTimer = false; // No timer global
 
+// ── MULTIPLAYER BACKEND (WebSocket) ────────────────────────
+// Streamlined: no user-facing buttons.
+// 1) Local dev uses: ws://localhost:8787
+// 2) GitHub Pages uses: the hardcoded WSS URL below
+const MP_SERVER_PROD = 'wss://YOUR-SERVICE.onrender.com'; // TODO: replace with your deployed backend
+
+let mpWsUrl = '';
+let mpWs = null;
+let mpConnected = false;
+let mpClientId = null;
+
+function isLocalDev() {
+  const h = location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' || location.protocol === 'file:';
+}
+
+function resolveMpWsUrl() {
+  if (isLocalDev()) return 'ws://localhost:8787';
+  return MP_SERVER_PROD;
+}
+
+function ensureMpServerConfigured() {
+  mpWsUrl = resolveMpWsUrl();
+  if (!mpWsUrl || mpWsUrl.includes('YOUR-SERVICE')) {
+    toast('Multiplayer is not configured yet. Set MP_SERVER_PROD in the HTML.');
+    return false;
+  }
+  return true;
+}
+
+function mpSend(obj) {
+  if (!mpWs || mpWs.readyState !== WebSocket.OPEN) return false;
+  mpWs.send(JSON.stringify(obj));
+  return true;
+}
+
+function mpConnect() {
+  if (!ensureMpServerConfigured()) return;
+  if (mpWs && (mpWs.readyState === WebSocket.OPEN || mpWs.readyState === WebSocket.CONNECTING)) return;
+  try {
+    mpWs = new WebSocket(mpWsUrl);
+  } catch (e) {
+    toast('Invalid multiplayer server URL');
+    return;
+  }
+  mpConnected = false;
+  mpWs.onopen = () => { mpConnected = true; };
+  mpWs.onclose = () => { mpConnected = false; };
+  mpWs.onerror = () => { mpConnected = false; };
+  mpWs.onmessage = (ev) => {
+    let msg;
+    try { msg = JSON.parse(ev.data); } catch (e) { return; }
+    handleMpMessage(msg);
+  };
+}
+
+function applyRoomSnapshot(room) {
+  if (!room) return;
+  roomCode = room.code || roomCode;
+  quizConfig = room.quizConfig || quizConfig;
+  questions = Array.isArray(room.questions) ? room.questions : questions;
+  players = Array.isArray(room.players) ? room.players : players;
+  isHost = !!(mpClientId && room.hostId && mpClientId === room.hostId);
+  gameMode = 'multi';
+  saveGameSession();
+  renderLobbyPlayersSafe();
+}
+
+function renderLobbyPlayersSafe() {
+  // Render into whichever lobby screen exists/active
+  if (document.getElementById('playersList')) renderLobbyPlayers();
+  if (document.getElementById('playersListWait')) renderLobbyWaitPlayers();
+  renderPlayersList(); // host list (if present)
+}
+
+function handleMpMessage(msg) {
+  if (!msg || !msg.type) return;
+  if (msg.type === 'hello') {
+    mpClientId = msg.clientId;
+    return;
+  }
+  if (msg.type === 'room_created') {
+    applyRoomSnapshot(msg.room);
+    document.getElementById('lobbyCode').textContent = roomCode;
+    goTo('screen-lobby');
+    return;
+  }
+  if (msg.type === 'join_accepted') {
+    applyRoomSnapshot(msg.room);
+    renderLobbyWaitPlayers();
+    goTo('screen-lobby-wait');
+    return;
+  }
+  if (msg.type === 'join_denied') {
+    toast(msg.message || 'Join denied');
+    return;
+  }
+  if (msg.type === 'room_update') {
+    applyRoomSnapshot(msg.room);
+    return;
+  }
+  if (msg.type === 'quiz_started') {
+    applyRoomSnapshot(msg.room);
+    // All clients (host + players) start the quiz now
+    goTo('screen-quiz');
+    startQuiz(false); // do not re-broadcast start
+    return;
+  }
+  if (msg.type === 'room_closed') {
+    toast(msg.message || 'Room closed');
+    goTo('screen-home');
+    return;
+  }
+  if (msg.type === 'error') {
+    toast(msg.message || 'Multiplayer error');
+  }
+}
+
 // ---- GAME SESSION PERSISTENCE ----
 function saveGameSession() {
   const session = {
@@ -1308,16 +1426,18 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
 
 // ── LOBBY (HOST) ──────────────────────────────────────────
 function setupLobby() {
-  roomCode = Math.random().toString(36).substring(2,6).toUpperCase();
   playerName = quizConfig.hostName || 'Host';
   isHost = true;
-  // Only add the real host — no auto-bots
-  players = [{ name: playerName, score: 0, color: COLORS[0], isHost: true, isAI: false }];
-  document.getElementById('lobbyCode').textContent = roomCode;
-  renderLobbyPlayers();
-  renderPlayersList();
-  saveGameSession();
-  goTo('screen-lobby');
+  gameMode = 'multi';
+  // Create initial host player locally; server will assign clientId as host id.
+  players = [{ id: 'host_local', name: playerName, score: 0, color: COLORS[0], isHost: true, isAI: false }];
+  mpConnect();
+  // If ws isn't open yet, try shortly after.
+  const sendCreate = () => {
+    const ok = mpSend({ type: 'create_room', name: playerName, quizConfig, questions, players });
+    if (!ok) setTimeout(sendCreate, 150);
+  };
+  sendCreate();
 }
 
 function openAddBotsModal() {
@@ -1331,12 +1451,14 @@ function confirmAddBots() {
   const availNames = AI_BOT_NAMES.filter(n => !players.find(p => p.name === n));
   for (let i = 0; i < toAdd && availNames.length > 0; i++) {
     const name = availNames.shift();
-    players.push({ name, score: 0, color: COLORS[players.length % COLORS.length], isHost: false, isAI: true });
+    players.push({ id: `ai_${Date.now()}_${i}`, name, score: 0, color: COLORS[players.length % COLORS.length], isHost: false, isAI: true });
   }
   document.getElementById('addBotsModal').classList.add('hidden');
   renderLobbyPlayers();
   renderPlayersList();
   saveGameSession();
+  // Sync updated players list to backend (host only)
+  if (gameMode === 'multi' && isHost) mpSend({ type: 'host_update', players });
   document.getElementById('playerCount').textContent = players.length + ' player' + (players.length !== 1 ? 's' : '');
   toast(`Added ${toAdd} AI player${toAdd !== 1 ? 's' : ''}`);
 }
@@ -1381,9 +1503,10 @@ function renderLobbyWaitPlayers() {
 function copyCode() { navigator.clipboard.writeText(roomCode).then(() => toast('Code copied!')).catch(()=>{}); }
 
 // ── QUIZ ──────────────────────────────────────────────────
-function startQuiz() {
-  if (gameMode === 'multi' && isHost) {
-    localStorage.setItem('qf_game_started', Date.now()); // notify other tabs/clients
+function startQuiz(broadcast = true) {
+  if (gameMode === 'multi' && isHost && broadcast) {
+    // Tell backend to start quiz for everyone
+    mpSend({ type: 'start_quiz' });
   }
   currentQ = 0; score = 0; correctCount = 0; wrongCount = 0; timeoutCount = 0; questionTimes = [];
   // Make sure questions are loaded before going to quiz screen
@@ -1512,6 +1635,11 @@ function submitAnswer(fromTimer = false) {
   document.getElementById('submitBtn').classList.add('hidden');
   document.getElementById('nextBtn').classList.remove('hidden');
   document.getElementById('nextBtn').textContent = currentQ < questions.length-1 ? 'Next →' : 'See Results';
+
+  // Multiplayer: publish score to backend (best-effort)
+  if (gameMode === 'multi') {
+    mpSend({ type: 'score_update', score });
+  }
 }
 
 function revealOptions(q, fromTimer) {
@@ -1627,21 +1755,17 @@ function confirmJoin() {
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   const name = document.getElementById('joinName').value.trim();
   if (!code || !name) { toast('Fill in both fields'); return; }
-  toast('Joined room ' + code + '! (Demo mode — questions loaded when host starts)');
+  toast('Joining room ' + code + '…');
   playerName = name;
   isHost = false;
   roomCode = code;
-  // Simulate being in a lobby — in real implementation this would connect to the host
-  players = [
-    { name: 'Host', score: 0, color: COLORS[0], isHost: true, isAI: false },
-    { name, score: 0, color: COLORS[1], isHost: false, isAI: false }
-  ];
-  renderLobbyWaitPlayers();
-  renderPlayersList();
-  saveGameSession();
-  goTo('screen-lobby-wait');
-  // Simulate host starting after delay (demo)
-  // In a real P2P/server implementation, this would be event-driven
+  gameMode = 'multi';
+  mpConnect();
+  const sendJoin = () => {
+    const ok = mpSend({ type: 'join_room', code, name });
+    if (!ok) setTimeout(sendJoin, 150);
+  };
+  sendJoin();
 }
 
 // ── UTILS ─────────────────────────────────────────────────
@@ -1657,6 +1781,9 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 updateBadge();
 updateSysBadge();
+if (!isLocalDev() && (MP_SERVER_PROD.includes('YOUR-SERVICE') || !MP_SERVER_PROD)) {
+  setTimeout(() => toast('Multiplayer disabled: set MP_SERVER_PROD (wss://...) in the HTML'), 1200);
+}
 
 // Chat sidebar toggle
 function toggleSidebar() {
@@ -1672,19 +1799,7 @@ function toggleSidebar() {
   }
 }
 
-// Multiplayer start sync across tabs
-window.addEventListener('storage', (event) => {
-  if (event.key === 'qf_game_started') {
-    // If in lobby, switch to quiz on all non-hosts
-    const lobbyWait = document.getElementById('screen-lobby-wait');
-    if (lobbyWait && lobbyWait.classList.contains('active')) {
-      loadGameSession();
-      renderPlayersList();
-      goTo('screen-quiz');
-      if (!isHost) startQuiz();
-    }
-  }
-});
+// Multiplayer is now handled via WebSocket backend (server.js)
 
 // Restore UI on reload
 try {
