@@ -871,7 +871,7 @@ function loadGameSession() {
     selectedAnswers = session.selectedAnswers || [];
     answered = !!session.answered;
     timedOut = !!session.timedOut;
-    gameMode = session.gameMode || 'solo';
+    gameMode = 'solo';
     roomCode = session.roomCode || '';
     playerName = session.playerName || 'You';
     isHost = !!session.isHost;
@@ -1523,7 +1523,6 @@ function setupLobby() {
   playerName = quizConfig.hostName || 'Host';
   isHost = true;
   players = [];
-  gameMode = 'multi';
   mpConnect();
   const sendCreate = () => {
     const ok = mpSend({ type: 'create_room', name: playerName, quizConfig, questions });
