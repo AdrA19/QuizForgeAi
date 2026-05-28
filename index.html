@@ -680,6 +680,7 @@
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+let gameMode = 'solo';
 const PROVIDERS = {
   openai:    { base: 'https://api.openai.com/v1',       model: 'gpt-4o-mini' },
   anthropic: { base: 'https://api.anthropic.com/v1',    model: 'claude-3-5-haiku-20241022' },
@@ -1524,6 +1525,7 @@ function setupLobby() {
   playerName = quizConfig.hostName || 'Host';
   isHost = true;
   players = [];
+  gameMode = 'multi';
   mpConnect();
   const sendCreate = () => {
     const ok = mpSend({ type: 'create_room', name: playerName, quizConfig, questions });
