@@ -1523,7 +1523,6 @@ Required output format (valid closed JSON, nothing else):
 function setupLobby() {
   playerName = quizConfig.hostName || 'Host';
   isHost = true;
-  gameMode = 'multi';
   players = [];
   mpConnect();
   const sendCreate = () => {
