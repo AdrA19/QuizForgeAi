@@ -680,7 +680,6 @@
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-let gameMode = 'solo';
 const PROVIDERS = {
   openai:    { base: 'https://api.openai.com/v1',       model: 'gpt-4o-mini' },
   anthropic: { base: 'https://api.anthropic.com/v1',    model: 'claude-3-5-haiku-20241022' },
@@ -790,7 +789,6 @@ function applyRoomSnapshot(room) {
   questions = Array.isArray(room.questions) ? room.questions : questions;
   players = Array.isArray(room.players) ? room.players : players;
   isHost = !!(mpClientId && room.hostId && mpClientId === room.hostId);
-  gameMode = 'multi';
   saveGameSession();
   renderLobbyPlayersSafe();
 }
