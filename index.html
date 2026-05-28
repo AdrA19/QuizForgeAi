@@ -424,7 +424,7 @@
         </div>
         <div class="group-list" id="groupList"></div>
         <div class="new-group-form" id="newGroupForm" style="display:none;">
-          <input type="text" id="newGroupInput" placeholder="Group name..." onkeydown="if(event.key==='Enter')confirmNewGroup();if(event.key==='Escape')closeNewGroupForm();" />
+          <input type="text" id="newGroupInput" placeholder="Chat name..." onkeydown="if(event.key==='Enter')confirmNewGroup();if(event.key==='Escape')closeNewGroupForm();" />
           <button class="btn btn-primary btn-sm" onclick="confirmNewGroup()" style="padding:6px 10px;">✓</button>
         </div>
       </div>
@@ -438,7 +438,6 @@
         </div>
         <div class="chat-actions-bar">
           <button class="btn btn-ghost btn-sm" onclick="clearCurrentChat()" style="font-size:0.78rem;">🗑 Clear chat</button>
-          <button class="btn btn-ghost btn-sm" onclick="deleteCurrentGroup()" style="font-size:0.78rem;color:var(--danger);border-color:rgba(250,77,109,0.3);">✕ Delete group</button>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-row">
