@@ -663,6 +663,7 @@
     <div class="q-actions">
       <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">Submit Answer</button>
       <button class="btn btn-secondary hidden" id="nextBtn" onclick="nextQuestion()">Next →</button>
+      <button class="btn btn-ghost btn-sm" id="leaveQuizBtn" onclick="confirmLeaveQuiz()" style="margin-left:auto;color:var(--text-dim);">✕ Leave</button>
     </div>
   </div>
 
@@ -863,8 +864,10 @@ function handleMpMessage(msg) {
 
 // ---- GAME SESSION PERSISTENCE ----
 function saveGameSession() {
+  const activeScreen = document.querySelector('.screen.active')?.id || 'screen-home';
   const session = {
-    uploadedFiles, quizConfig, questions, currentQ, score, correctCount, wrongCount,
+    activeScreen,
+    quizConfig, questions, currentQ, score, correctCount, wrongCount,
     timeoutCount, questionTimes, selectedAnswers, answered, timedOut, gameMode,
     roomCode, playerName, isHost, players, difficulty, noTimer
   };
@@ -877,7 +880,7 @@ function loadGameSession() {
   try {
     const session = JSON.parse(s);
     if (!session) return;
-    uploadedFiles = session.uploadedFiles || [];
+    uploadedFiles = []; // always start fresh — File objects can't be persisted
     quizConfig = session.quizConfig || {};
     questions = session.questions || [];
     currentQ = session.currentQ || 0;
@@ -1820,6 +1823,13 @@ function toast(msg) {
   setTimeout(() => t.remove(), 3000);
 }
 
+function confirmLeaveQuiz() {
+  if (confirm('Leave the quiz? Your progress will be saved to results.')) {
+    clearTimer();
+    showResults();
+  }
+}
+
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 updateBadge();
@@ -1844,6 +1854,24 @@ try {
     toggleNoTimer();
   }
   renderPlayersList();
+  // Restore active screen (but not multiplayer lobby screens — those need live connection)
+  const savedScreen = (JSON.parse(localStorage.getItem('qf_gamestate')||'{}').activeScreen) || 'screen-home';
+  const safeScreens = ['screen-quiz', 'screen-results'];
+  if (safeScreens.includes(savedScreen) && questions && questions.length) {
+    goTo(savedScreen);
+    if (savedScreen === 'screen-quiz') {
+      // Re-render current question state
+      document.getElementById('livePlayersStrip').classList.toggle('hidden', gameMode !== 'multi');
+      if (gameMode === 'multi') renderLivePlayers();
+      showQuestion();
+      // If was already answered, re-show next button
+      if (answered) {
+        document.getElementById('submitBtn').classList.add('hidden');
+        document.getElementById('nextBtn').classList.remove('hidden');
+        document.getElementById('nextBtn').textContent = currentQ < questions.length-1 ? 'Next →' : 'See Results';
+      }
+    }
+  }
 } catch (e) {}
 </script>
 </body>
