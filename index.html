@@ -255,76 +255,6 @@
   .lobby-waiting-sub { font-size: 0.85rem; color: var(--text-muted); }
   .waiting-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
   .ai-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 0.68rem; font-family: var(--font-mono); padding: 2px 7px; border-radius: 999px; background: rgba(245,200,66,0.12); color: var(--gold); border: 1px solid rgba(245,200,66,0.25); }
-
-  /* ── MOBILE RESPONSIVE ── */
-  @media (max-width: 600px) {
-    .app { padding: 1rem; }
-    .header { margin-bottom: 1.5rem; }
-    .logo { font-size: 1.25rem; }
-    .api-badge { font-size: 0.65rem; padding: 3px 8px; }
-
-    /* Hero */
-    .hero-title { font-size: clamp(1.8rem, 8vw, 2.5rem); margin-bottom: 0.75rem; }
-    .hero-subtitle { font-size: 0.95rem; margin-bottom: 1.5rem; }
-    .hero-actions { flex-direction: column; gap: 0.75rem; }
-    .hero-actions .btn { width: 100%; justify-content: center; }
-
-    /* Chat */
-    .chat-layout { flex-direction: column; height: auto; min-height: 0; }
-    .chat-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; margin-right: 0; padding-bottom: 0.75rem; margin-bottom: 0.75rem; max-height: 200px; }
-    .chat-sidebar.hidden { display: none !important; }
-    .chat-main { min-height: 70vh; }
-    .chat-messages { min-height: 300px; max-height: 55vh; }
-    .chat-header { flex-wrap: wrap; gap: 8px; }
-    .chat-title { font-size: 1rem; }
-    .chat-group-tag, .chat-sys-badge { font-size: 0.65rem; padding: 2px 7px; }
-
-    /* Setup */
-    .setup-grid { grid-template-columns: 1fr; }
-    .setup-grid .card[style*="grid-column"] { grid-column: 1 !important; }
-    .mode-cards { grid-template-columns: 1fr; }
-    .steps { gap: 0; }
-    .step-label { display: none; }
-    .step-line { min-width: 12px; }
-
-    /* Quiz */
-    .quiz-header { gap: 0.5rem; }
-    .q-text { font-size: 1.1rem; }
-    .option { padding: 0.75rem 1rem; font-size: 0.88rem; }
-    .q-actions { flex-wrap: wrap; }
-    .q-actions .btn { flex: 1; min-width: 120px; justify-content: center; }
-    #leaveQuizBtn { flex: 0 0 auto; min-width: unset; margin-left: 0; }
-
-    /* Results */
-    .score-big { font-size: 3.5rem; }
-    .score-stats { grid-template-columns: repeat(2,1fr); gap: 0.75rem; }
-    .stat-num { font-size: 1.3rem; }
-
-    /* Lobby */
-    .lobby-code { font-size: 2rem; padding: 0.75rem 1rem; }
-    .player-item { padding: 8px 10px; }
-
-    /* Modal */
-    .modal { padding: 1.25rem; }
-    .provider-pills { gap: 6px; }
-    .provider-pill { font-size: 0.7rem; padding: 3px 8px; }
-
-    /* Leaderboard */
-    .lb-item { padding: 10px 12px; gap: 8px; }
-    .lb-score { font-size: 0.8rem; }
-
-    /* General */
-    .card { padding: 1rem; border-radius: var(--r); }
-    .section-title { font-size: 1.2rem; }
-    .btn { padding: 0.65rem 1.1rem; font-size: 0.88rem; }
-    .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
-  }
-
-  @media (max-width: 380px) {
-    .hero-title { font-size: 1.6rem; }
-    .lobby-code { font-size: 1.6rem; letter-spacing: 0.1em; }
-    .score-big { font-size: 3rem; }
-  }
 </style>
 </head>
 <body>
@@ -333,7 +263,6 @@
 <div class="orb orb2"></div>
 <div class="orb orb3"></div>
 
-<!-- API MODAL -->
 <div class="modal-overlay hidden" id="apiModal">
   <div class="modal">
     <div class="modal-title">⚙ API Configuration</div>
@@ -361,6 +290,15 @@
       <label>API Key</label>
       <input type="password" id="apiKeyInput" placeholder="sk-..." />
     </div>
+    <div class="field-group">
+      <label>Max Tokens (quiz generation)</label>
+      <div class="range-row">
+        <input type="range" min="500" max="4000" step="100" value="2000" id="maxTokensSlider"
+          oninput="document.getElementById('maxTokensVal').textContent=this.value" />
+        <span class="range-val" id="maxTokensVal">2000</span>
+      </div>
+      <div class="hint">Lower = fewer rate limit hits on Groq/free tiers. Recommended: 2000 for Groq, 4000 for OpenAI.</div>
+    </div>
     <div style="margin-top:1.2rem;display:flex;gap:8px;">
       <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
       <button class="btn btn-ghost" onclick="closeApiModal()">Cancel</button>
@@ -368,7 +306,6 @@
   </div>
 </div>
 
-<!-- SYS PROMPT MODAL -->
 <div class="modal-overlay hidden" id="sysPromptModal">
   <div class="modal">
     <div class="modal-title">🧠 Assistant Settings</div>
@@ -410,7 +347,6 @@
   </div>
 </div>
 
-<!-- ADD AI BOTS MODAL -->
 <div class="modal-overlay hidden" id="addBotsModal">
   <div class="modal">
     <div class="modal-title">🤖 Add AI Players</div>
@@ -438,7 +374,6 @@
     <button class="api-badge" id="apiBadge" onclick="openApiModal()">⚙ API Key</button>
   </div>
 
-  <!-- HOME -->
   <div class="screen active" id="screen-home">
     <div class="hero-title">Turn any document<br><span class="line2">into a quiz.</span></div>
     <div class="hero-subtitle">Upload documents or text files. Let AI craft the perfect quiz. Challenge friends or go solo.</div>
@@ -465,10 +400,8 @@
     </div>
   </div>
 
-  <!-- CHAT -->
   <div class="screen" id="screen-chat">
     <div class="chat-layout">
-      <!-- Sidebar -->
       <button 
         class="btn btn-ghost btn-sm"
         id="sidebarToggleBtn"
@@ -481,7 +414,7 @@
       <div class="chat-sidebar" id="chatSidebar">
         <div class="sidebar-head">
           <div class="sidebar-title">💬 Chats</div>
-          <button class="btn btn-ghost btn-sm" onclick="openNewGroupPrompt()" style="padding:4px 8px;font-size:0.8rem;" title="New group">+</button>
+          <button class="btn btn-ghost btn-sm" onclick="openNewGroupPrompt()" style="padding:4px 8px;font-size:0.8rem;" title="New group folder">+</button>
         </div>
         <div class="group-list" id="groupList"></div>
         <div class="new-group-form" id="newGroupForm" style="display:none;">
@@ -489,7 +422,6 @@
           <button class="btn btn-primary btn-sm" onclick="confirmNewGroup()" style="padding:6px 10px;">✓</button>
         </div>
       </div>
-      <!-- Main -->
       <div class="chat-main">
         <div class="chat-header">
           <button class="btn btn-ghost btn-sm" onclick="goTo('screen-home')">← Back</button>
@@ -499,7 +431,6 @@
         </div>
         <div class="chat-actions-bar">
           <button class="btn btn-ghost btn-sm" onclick="clearCurrentChat()" style="font-size:0.78rem;">🗑 Clear chat</button>
-          <button class="btn btn-ghost btn-sm" onclick="deleteCurrentGroup()" style="font-size:0.78rem;color:var(--danger);border-color:rgba(250,77,109,0.3);">✕ Delete group</button>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-row">
@@ -510,7 +441,6 @@
     </div>
   </div>
 
-  <!-- SETUP -->
   <div class="screen" id="screen-setup">
     <div class="steps">
       <div class="step active" id="step1"><div class="step-dot">1</div><div class="step-label">Upload</div></div>
@@ -611,7 +541,6 @@
     </div>
   </div>
 
-  <!-- GENERATING -->
   <div class="screen" id="screen-generating">
     <div class="gen-state">
       <div class="gen-spinner"></div>
@@ -621,7 +550,6 @@
     </div>
   </div>
 
-  <!-- LOBBY (HOST) -->
   <div class="screen" id="screen-lobby">
     <div class="section-title">🎮 Game Lobby</div>
     <div class="section-sub">Share the code with friends. Only you (host) can start the quiz.</div>
@@ -644,7 +572,6 @@
     </div>
   </div>
 
-  <!-- LOBBY WAITING (non-host) -->
   <div class="screen" id="screen-lobby-wait">
     <div class="lobby-code" id="lobbyCodeWait">----</div>
     <div class="card" style="margin-bottom:1.5rem;">
@@ -664,7 +591,6 @@
     </div>
   </div>
 
-  <!-- JOIN -->
   <div class="screen" id="screen-join">
     <div class="section-title">Join a Quiz</div>
     <div class="section-sub">Enter the room code and your name to join.</div>
@@ -684,7 +610,6 @@
     </div>
   </div>
 
-  <!-- QUIZ -->
   <div class="screen" id="screen-quiz">
     <div class="quiz-header">
       <div class="q-progress-wrap">
@@ -724,10 +649,10 @@
     <div class="q-actions">
       <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">Submit Answer</button>
       <button class="btn btn-secondary hidden" id="nextBtn" onclick="nextQuestion()">Next →</button>
+      <button class="btn btn-ghost btn-sm" id="leaveQuizBtn" onclick="confirmLeaveQuiz()" style="margin-left:auto;color:var(--text-dim);">✕ Leave</button>
     </div>
   </div>
 
-  <!-- RESULTS -->
   <div class="screen" id="screen-results">
     <div class="score-hero">
       <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.1em;">Your Score</div>
@@ -802,12 +727,10 @@ let players = [];
 let difficulty = 'medium';
 let chatStreaming = false;
 let noTimer = false; // No timer global
+let apiMaxTokens = parseInt(localStorage.getItem('qf_maxtokens') || '2000');
 
 // ── MULTIPLAYER BACKEND (WebSocket) ────────────────────────
-// Streamlined: no user-facing buttons.
-// 1) Local dev uses: ws://localhost:8787
-// 2) GitHub Pages uses: the hardcoded WSS URL below
-const MP_SERVER_PROD = 'wss://quizforge-multiplayer.onrender.com'; // TODO: replace with your deployed backend
+const MP_SERVER_PROD = 'wss://quizforge-multiplayer.onrender.com';
 
 let mpWsUrl = '';
 let mpWs = null;
@@ -866,16 +789,14 @@ function applyRoomSnapshot(room) {
   questions = Array.isArray(room.questions) ? room.questions : questions;
   players = Array.isArray(room.players) ? room.players : players;
   isHost = !!(mpClientId && room.hostId && mpClientId === room.hostId);
-  gameMode = 'multi';
   saveGameSession();
   renderLobbyPlayersSafe();
 }
 
 function renderLobbyPlayersSafe() {
-  // Render into whichever lobby screen exists/active
   if (document.getElementById('playersList')) renderLobbyPlayers();
   if (document.getElementById('playersListWait')) renderLobbyWaitPlayers();
-  renderPlayersList(); // host list (if present)
+  renderPlayersList(); 
 }
 
 function handleMpMessage(msg) {
@@ -906,9 +827,8 @@ function handleMpMessage(msg) {
   }
   if (msg.type === 'quiz_started') {
     applyRoomSnapshot(msg.room);
-    // All clients (host + players) start the quiz now
     goTo('screen-quiz');
-    startQuiz(false); // do not re-broadcast start
+    startQuiz(false); 
     return;
   }
   if (msg.type === 'room_closed') {
@@ -923,8 +843,10 @@ function handleMpMessage(msg) {
 
 // ---- GAME SESSION PERSISTENCE ----
 function saveGameSession() {
+  const activeScreen = document.querySelector('.screen.active')?.id || 'screen-home';
   const session = {
-    uploadedFiles, quizConfig, questions, currentQ, score, correctCount, wrongCount,
+    activeScreen,
+    quizConfig, questions, currentQ, score, correctCount, wrongCount,
     timeoutCount, questionTimes, selectedAnswers, answered, timedOut, gameMode,
     roomCode, playerName, isHost, players, difficulty, noTimer
   };
@@ -937,7 +859,7 @@ function loadGameSession() {
   try {
     const session = JSON.parse(s);
     if (!session) return;
-    uploadedFiles = session.uploadedFiles || [];
+    uploadedFiles = []; 
     quizConfig = session.quizConfig || {};
     questions = session.questions || [];
     currentQ = session.currentQ || 0;
@@ -949,7 +871,7 @@ function loadGameSession() {
     selectedAnswers = session.selectedAnswers || [];
     answered = !!session.answered;
     timedOut = !!session.timedOut;
-    gameMode = session.gameMode || 'solo';
+    gameMode = 'solo';
     roomCode = session.roomCode || '';
     playerName = session.playerName || 'You';
     isHost = !!session.isHost;
@@ -962,16 +884,29 @@ function loadGameSession() {
 loadGameSession();
 
 // ── CHAT GROUPS ──────────────────────────────────────────
-// Structure: { id, name, messages: [{role, content}], history: [{role,content}] }
+// Migrated structure: Nested Groups containing Chats
 let chatGroups = JSON.parse(localStorage.getItem('qf_chatgroups') || 'null');
+
+// Migration Check: If old flat structure, wrap it
+if (chatGroups && chatGroups.length > 0 && typeof chatGroups[0].messages !== 'undefined') {
+  chatGroups = [{
+    id: 'g_legacy',
+    name: 'Saved Chats',
+    chats: chatGroups.map((c, i) => ({ ...c, name: c.name || `Chat ${i+1}` }))
+  }];
+}
+
 if (!chatGroups || !chatGroups.length) {
   chatGroups = [
-    { id: 'general', name: 'General', messages: [], history: [] },
-    { id: 'science', name: 'Science', messages: [], history: [] },
-    { id: 'history', name: 'History', messages: [], history: [] }
+    { 
+      id: 'g_general', 
+      name: 'General', 
+      chats: [{ id: 'c_general', name: 'New Chat', messages: [], history: [] }] 
+    }
   ];
 }
 let activeGroupId = chatGroups[0].id;
+let activeChatId = chatGroups[0].chats[0].id;
 
 function saveChatGroups() {
   localStorage.setItem('qf_chatgroups', JSON.stringify(chatGroups));
@@ -981,61 +916,119 @@ function getActiveGroup() {
   return chatGroups.find(g => g.id === activeGroupId) || chatGroups[0];
 }
 
+function getActiveChat() {
+  const group = getActiveGroup();
+  return group.chats.find(c => c.id === activeChatId) || group.chats[0];
+}
+
 function renderGroupList() {
   const el = document.getElementById('groupList');
-  el.innerHTML = chatGroups.map(g => `
-    <div class="group-item ${g.id === activeGroupId ? 'active' : ''}" onclick="switchGroup('${g.id}')">
-      <span style="font-size:0.9rem;">💬</span>
-      <span class="group-item-name">${escHtml(g.name)}</span>
+  el.innerHTML = chatGroups.map(g => {
+    const isActiveGroup = g.id === activeGroupId;
+    let html = `
+    <div class="group-item ${isActiveGroup ? 'active' : ''}" onclick="switchGroup('${g.id}')">
+      <span style="font-size:0.9rem;">📁</span>
+      <span class="group-item-name" style="font-weight:600;">${escHtml(g.name)}</span>
       <div class="group-item-actions">
+        <button class="group-action-btn" onclick="event.stopPropagation();newChat('${g.id}')" title="New chat in group">+</button>
         <button class="group-action-btn" onclick="event.stopPropagation();deleteGroup('${g.id}')" title="Delete group">✕</button>
       </div>
-    </div>`).join('');
+    </div>`;
+    
+    // Render Chats under the active group
+    if (isActiveGroup) {
+      html += g.chats.map(c => `
+        <div class="group-item ${c.id === activeChatId ? 'active' : ''}" style="margin-left: 15px; padding-left: 10px; border-left: 2px solid var(--border); font-size: 0.8rem;" onclick="event.stopPropagation(); switchChat('${g.id}', '${c.id}')">
+          <span style="font-size:0.8rem;">💬</span>
+          <span class="group-item-name">${escHtml(c.name)}</span>
+          <div class="group-item-actions">
+            <button class="group-action-btn" onclick="event.stopPropagation();deleteChat('${g.id}', '${c.id}')" title="Delete chat">✕</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    return html;
+  }).join('');
 }
 
 function switchGroup(id) {
+  const group = chatGroups.find(g => g.id === id);
+  if (!group) return;
   activeGroupId = id;
+  if (group.chats.length > 0) activeChatId = group.chats[0].id;
   renderGroupList();
   renderChatMessages();
-  document.getElementById('currentGroupTag').textContent = getActiveGroup().name;
+  document.getElementById('currentGroupTag').textContent = group.name;
+}
+
+function switchChat(groupId, chatId) {
+  activeGroupId = groupId;
+  activeChatId = chatId;
+  renderGroupList();
+  renderChatMessages();
+}
+
+function newChat(groupId) {
+  const group = chatGroups.find(g => g.id === groupId);
+  if (!group) return;
+  const chatId = 'c_' + Date.now();
+  group.chats.unshift({ id: chatId, name: 'New Chat', messages: [], history: [] });
+  activeGroupId = groupId;
+  activeChatId = chatId;
+  saveChatGroups();
+  renderGroupList();
+  renderChatMessages();
 }
 
 function renderChatMessages() {
   const msgs = document.getElementById('chatMessages');
-  const group = getActiveGroup();
-  if (!group.messages.length) {
+  const chat = getActiveChat();
+  if (!chat.messages.length) {
     msgs.innerHTML = '<div class="chat-bubble bubble-ai">Hey! I\'m your study assistant. Ask me anything — concepts, explanations, quiz practice, or just brainstorm a topic. 🎓</div>';
     return;
   }
-  msgs.innerHTML = group.messages.map(m => `<div class="chat-bubble ${m.role === 'user' ? 'bubble-user' : 'bubble-ai'}">${escHtml(m.content)}</div>`).join('');
+  msgs.innerHTML = chat.messages.map(m => `<div class="chat-bubble ${m.role === 'user' ? 'bubble-user' : 'bubble-ai'}">${escHtml(m.content)}</div>`).join('');
   scrollChatToBottom();
 }
 
 function clearCurrentChat() {
-  const group = getActiveGroup();
-  group.messages = [];
-  group.history = [];
+  const chat = getActiveChat();
+  chat.messages = [];
+  chat.history = [];
+  chat.name = 'New Chat';
   saveChatGroups();
+  renderGroupList();
   renderChatMessages();
   toast('Chat cleared');
 }
 
-function deleteCurrentGroup() {
-  if (chatGroups.length <= 1) { toast("Can't delete the last group"); return; }
-  deleteGroup(activeGroupId);
-}
-
 function deleteGroup(id) {
+  if (chatGroups.length <= 1) { toast("Can't delete the last group"); return; }
   const idx = chatGroups.findIndex(g => g.id === id);
   if (idx === -1) return;
   const wasActive = id === activeGroupId;
   chatGroups.splice(idx, 1);
-  if (wasActive) activeGroupId = chatGroups[Math.max(0, idx - 1)].id;
+  if (wasActive) {
+    activeGroupId = chatGroups[Math.max(0, idx - 1)].id;
+    activeChatId = chatGroups[Math.max(0, idx - 1)].chats[0].id;
+  }
   saveChatGroups();
   renderGroupList();
   renderChatMessages();
   document.getElementById('currentGroupTag').textContent = getActiveGroup().name;
   toast('Group deleted');
+}
+
+function deleteChat(groupId, chatId) {
+  const group = chatGroups.find(g => g.id === groupId);
+  if (!group) return;
+  if (group.chats.length <= 1) { toast("Can't delete the last chat in a group"); return; }
+  const idx = group.chats.findIndex(c => c.id === chatId);
+  group.chats.splice(idx, 1);
+  if (activeChatId === chatId) activeChatId = group.chats[0].id;
+  saveChatGroups();
+  renderGroupList();
+  renderChatMessages();
 }
 
 function openNewGroupPrompt() {
@@ -1052,12 +1045,16 @@ function confirmNewGroup() {
   const name = document.getElementById('newGroupInput').value.trim();
   if (!name) { toast('Enter a group name'); return; }
   const id = 'g_' + Date.now();
-  chatGroups.push({ id, name, messages: [], history: [] });
+  const chatId = 'c_' + Date.now();
+  chatGroups.push({ id, name, chats: [{ id: chatId, name: 'New Chat', messages: [], history: [] }] });
   document.getElementById('newGroupInput').value = '';
   closeNewGroupForm();
   saveChatGroups();
-  switchGroup(id);
+  activeGroupId = id;
+  activeChatId = chatId;
   renderGroupList();
+  renderChatMessages();
+  document.getElementById('currentGroupTag').textContent = name;
   toast('Group created: ' + name);
 }
 
@@ -1114,6 +1111,8 @@ function openApiModal() {
   document.getElementById('apiBaseInput').value = apiBase;
   document.getElementById('apiModelInput').value = apiModel;
   setProvider(currentProvider, false);
+  document.getElementById('maxTokensSlider').value = apiMaxTokens;
+  document.getElementById('maxTokensVal').textContent = apiMaxTokens;
 }
 function closeApiModal() { document.getElementById('apiModal').classList.add('hidden'); }
 
@@ -1143,6 +1142,8 @@ function saveApiKey() {
   localStorage.setItem('qf_base', apiBase);
   localStorage.setItem('qf_model', apiModel);
   localStorage.setItem('qf_provider', currentProvider);
+  apiMaxTokens = parseInt(document.getElementById('maxTokensSlider').value);
+  localStorage.setItem('qf_maxtokens', apiMaxTokens);
   closeApiModal();
   updateBadge();
   toast('API config saved ✓');
@@ -1168,8 +1169,7 @@ function saveSysPrompt() {
   sysPrompt = document.getElementById('sysPromptInput').value.trim();
   localStorage.setItem('qf_sysprompt', sysPrompt);
   closeSysPromptModal();
-  // Reset history for all groups
-  chatGroups.forEach(g => { g.history = []; });
+  chatGroups.forEach(g => { g.chats.forEach(c => c.history = []) });
   saveChatGroups();
   toast('System prompt applied. Conversation history reset.');
   updateSysBadge();
@@ -1240,7 +1240,6 @@ function scrollChatToBottom() {
 
 function appendBubble(role, text) {
   const msgs = document.getElementById('chatMessages');
-  // Remove greeting bubble if it's the first real message
   const existing = msgs.querySelectorAll('.chat-bubble');
   if (existing.length === 1 && existing[0].classList.contains('bubble-ai') && existing[0].textContent.startsWith('Hey!')) {
     existing[0].remove();
@@ -1260,14 +1259,17 @@ async function sendChatMessage() {
   if (!text) return;
   if (!apiKey) { openApiModal(); toast('Please configure your API key first'); return; }
 
-  const group = getActiveGroup();
+  const chat = getActiveChat();
+  
+  // Auto-name chat on first message
+  if (chat.messages.length === 0) {
+    chat.name = text.split(' ').slice(0, 3).join(' ') + (text.split(' ').length > 3 ? '...' : '');
+    renderGroupList();
+  }
+
   input.value = '';
   input.style.height = 'auto';
 
-  // Save user message
-  group.messages.push({ role: 'user', content: text });
-  group.history.push({ role: 'user', content: text });
-  saveChatGroups();
   appendBubble('user', text);
 
   chatStreaming = true;
@@ -1279,7 +1281,7 @@ async function sendChatMessage() {
   try {
     const messages = [];
     if (sysPrompt) messages.push({ role: 'system', content: sysPrompt });
-    messages.push(...group.history.slice(0, -1)); // history minus last (which we push next)
+    messages.push(...chat.history);
     messages.push({ role: 'user', content: text });
 
     const res = await fetch(apiBase + '/chat/completions', {
@@ -1298,8 +1300,10 @@ async function sendChatMessage() {
     thinkingBubble.textContent = reply;
     thinkingBubble.classList.remove('thinking');
 
-    group.messages.push({ role: 'assistant', content: reply });
-    group.history.push({ role: 'assistant', content: reply });
+    chat.messages.push({ role: 'user', content: text });
+    chat.history.push({ role: 'user', content: text });
+    chat.messages.push({ role: 'assistant', content: reply });
+    chat.history.push({ role: 'assistant', content: reply });
     saveChatGroups();
   } catch(e) {
     thinkingBubble.textContent = '⚠ Error: ' + (e.message || 'Something went wrong.');
@@ -1373,7 +1377,7 @@ async function extractTextFromFiles() {
       }
     } catch(e) { console.warn('Extract error', file.name, e); }
   }
-  return allText.slice(0, 12000);
+  return allText.slice(0, 4000);
 }
 
 async function extractPDF(file) {
@@ -1461,7 +1465,9 @@ async function generateQuestions(text, cfg) {
     typing: 'Type-in (no options, short 1-3 word answer, field "type":"typing")'
   };
   const typeList = cfg.types.map(t => typeDescs[t]).join('; ');
-  const prompt = `You are a quiz generator. Based on the provided document text, create exactly ${cfg.count} quiz questions at ${cfg.difficulty} difficulty.
+  const prompt = `You are a quiz generator. Output ONLY raw JSON — no markdown, no backticks, no extra text before or after. You MUST always close every bracket and quote. Never truncate. If you run out of space, output fewer questions but always end with valid closed JSON.
+
+Based on the provided document text, create exactly ${cfg.count} quiz questions at ${cfg.difficulty} difficulty.
 
 DOCUMENT TEXT:
 ${text}
@@ -1474,13 +1480,13 @@ REQUIREMENTS:
 - Include a brief "explanation" for each question (1-2 sentences)
 - All questions must be directly based on the document content
 
-Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
+Required output format (valid closed JSON, nothing else):
 {"questions":[{"type":"mcq","question":"...","options":["A","B","C","D"],"correct":[0],"explanation":"..."},{"type":"multi","question":"...","options":["A","B","C","D"],"correct":[0,2],"explanation":"..."},{"type":"typing","question":"...","answer":"...","explanation":"..."}]}`;
 
   const res = await fetch(apiBase + '/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: apiModel, max_tokens: 4000, temperature: 0.7, messages: [{ role: 'user', content: prompt }] })
+    body: JSON.stringify({ model: apiModel, max_tokens: apiMaxTokens, temperature: 0.7, messages: [{ role: 'user', content: prompt }] })
   });
 
   if (!res.ok) {
@@ -1490,21 +1496,36 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
 
   const data = await res.json();
   let raw = (data.choices?.[0]?.message?.content || '').replace(/```json|```/g,'').trim();
-  const parsed = JSON.parse(raw);
-  return parsed.questions || parsed;
+  try {
+    return JSON.parse(raw).questions || JSON.parse(raw);
+  } catch(e) {
+    let fixed = raw;
+    const quoteCount = (fixed.match(/(?<!\\)"/g) || []).length;
+    if (quoteCount % 2 !== 0) fixed += '"';
+    const opens = (fixed.match(/[{[]/g) || []).length;
+    const closes = (fixed.match(/[}\]]/g) || []).length;
+    const diff = opens - closes;
+    for (let i = 0; i < diff; i++) {
+      fixed += fixed.split('').reverse().find(c => c === '{' || c === '[') === '{' ? '}' : ']';
+    }
+    fixed = fixed.replace(/,\s*([}\]])/g, '$1');
+    try {
+      const parsed = JSON.parse(fixed);
+      return parsed.questions || parsed;
+    } catch(e2) {
+      throw new Error('AI returned invalid JSON. Try reducing question count or using a larger token limit.');
+    }
+  }
 }
 
 // ── LOBBY (HOST) ──────────────────────────────────────────
 function setupLobby() {
   playerName = quizConfig.hostName || 'Host';
   isHost = true;
-  gameMode = 'multi';
-  // Create initial host player locally; server will assign clientId as host id.
-  players = [{ id: 'host_local', name: playerName, score: 0, color: COLORS[0], isHost: true, isAI: false }];
+  players = [];
   mpConnect();
-  // If ws isn't open yet, try shortly after.
   const sendCreate = () => {
-    const ok = mpSend({ type: 'create_room', name: playerName, quizConfig, questions, players });
+    const ok = mpSend({ type: 'create_room', name: playerName, quizConfig, questions });
     if (!ok) setTimeout(sendCreate, 150);
   };
   sendCreate();
@@ -1517,7 +1538,7 @@ function openAddBotsModal() {
 function confirmAddBots() {
   const count = parseInt(document.getElementById('botCountSlider').value);
   const existingBots = players.filter(p => p.isAI).length;
-  const toAdd = Math.min(count, 5 - existingBots); // max 5 total bots
+  const toAdd = Math.min(count, 5 - existingBots); 
   const availNames = AI_BOT_NAMES.filter(n => !players.find(p => p.name === n));
   for (let i = 0; i < toAdd && availNames.length > 0; i++) {
     const name = availNames.shift();
@@ -1527,7 +1548,6 @@ function confirmAddBots() {
   renderLobbyPlayers();
   renderPlayersList();
   saveGameSession();
-  // Sync updated players list to backend (host only)
   if (gameMode === 'multi' && isHost) mpSend({ type: 'host_update', players });
   document.getElementById('playerCount').textContent = players.length + ' player' + (players.length !== 1 ? 's' : '');
   toast(`Added ${toAdd} AI player${toAdd !== 1 ? 's' : ''}`);
@@ -1575,11 +1595,9 @@ function copyCode() { navigator.clipboard.writeText(roomCode).then(() => toast('
 // ── QUIZ ──────────────────────────────────────────────────
 function startQuiz(broadcast = true) {
   if (gameMode === 'multi' && isHost && broadcast) {
-    // Tell backend to start quiz for everyone
     mpSend({ type: 'start_quiz' });
   }
   currentQ = 0; score = 0; correctCount = 0; wrongCount = 0; timeoutCount = 0; questionTimes = [];
-  // Make sure questions are loaded before going to quiz screen
   if (!questions || !questions.length) {
     toast('No questions loaded. Please generate a quiz first.');
     goTo('screen-setup');
@@ -1689,8 +1707,12 @@ function submitAnswer(fromTimer = false) {
     if (fromTimer) document.getElementById('timeoutBanner').classList.add('show');
   }
 
+  // FIXED POINTS CALCULATION (No-Timer / NaN Bug)
   if (isCorrect) {
-    const points = Math.max(10, Math.round(100 - (elapsed/quizConfig.time)*60));
+    let points = 100; // Flat 100 points for No Timer
+    if (quizConfig.time && quizConfig.time > 0) {
+      points = Math.max(10, Math.round(100 - (elapsed / quizConfig.time) * 60));
+    }
     score += points;
     correctCount++;
     if (gameMode === 'multi') simulateAIScores();
@@ -1706,7 +1728,6 @@ function submitAnswer(fromTimer = false) {
   document.getElementById('nextBtn').classList.remove('hidden');
   document.getElementById('nextBtn').textContent = currentQ < questions.length-1 ? 'Next →' : 'See Results';
 
-  // Multiplayer: publish score to backend (best-effort)
   if (gameMode === 'multi') {
     mpSend({ type: 'score_update', score });
   }
@@ -1773,14 +1794,12 @@ function updateTimerDisplay(t, total, circ, circLen) {
 function clearTimer() { clearInterval(timerInterval); timerInterval = null; }
 
 // ── AI BOTS (no API calls) ────────────────────────────────
-// AI player scores are purely random local simulation — zero API tokens used
 function simulateAIScores() {
-  players.forEach((p, i) => {
-    if (i === 0) { p.score = score; return; } // index 0 = real player (host)
-    if (p.isAI) {
-      p.score += Math.floor(Math.random() * 80 + 20);
-    }
+  players.forEach(p => {
+    if (p.isAI) p.score = (p.score || 0) + Math.floor(Math.random() * 80 + 20);
   });
+  const me = players.find(p => p.id === mpClientId);
+  if (me) me.score = score;
   renderLivePlayers();
 }
 
@@ -1797,22 +1816,26 @@ function showResults() {
 
   let lbPlayers;
   if (gameMode === 'multi') {
-    players[0].score = score;
+    const me = players.find(p => p.id === mpClientId);
+    if (me) me.score = score;
     lbPlayers = [...players].sort((a,b) => b.score - a.score);
   } else {
     lbPlayers = [{ name: 'You', score, isMe: true }];
   }
   const max = lbPlayers[0]?.score || 1;
   const rankEmoji = ['🥇','🥈','🥉'];
-  document.getElementById('leaderboard').innerHTML = lbPlayers.map((p,i) => `
-    <div class="lb-item ${p.isMe||(p.name===playerName&&!p.isAI)?'me':''}">
+  document.getElementById('leaderboard').innerHTML = lbPlayers.map((p,i) => {
+    const isMe = p.isMe || p.id === mpClientId;
+    return `
+    <div class="lb-item ${isMe ? 'me' : ''}">
       <div class="lb-rank ${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':''}">${rankEmoji[i]||'#'+(i+1)}</div>
       <div style="flex:1;">
-        <div class="lb-name">${escHtml(p.name)}${p.isMe||(p.name===playerName&&!p.isAI)?' <span style="color:var(--text-muted);font-size:0.8rem;">(You)</span>':''}${p.isAI?' <span class="ai-tag" style="font-size:0.65rem;padding:1px 6px;vertical-align:middle;">AI</span>':''}</div>
+        <div class="lb-name">${escHtml(p.name)}${isMe?' <span style="color:var(--text-muted);font-size:0.8rem;">(You)</span>':''}${p.isAI?' <span class="ai-tag" style="font-size:0.65rem;padding:1px 6px;vertical-align:middle;">AI</span>':''}</div>
         <div class="lb-bar"><div class="lb-bar-fill" style="width:${Math.round((p.score/max)*100)}%"></div></div>
       </div>
       <div class="lb-score">${p.score} pts</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   goTo('screen-results');
 }
 
@@ -1847,6 +1870,13 @@ function toast(msg) {
   setTimeout(() => t.remove(), 3000);
 }
 
+function confirmLeaveQuiz() {
+  if (confirm('Leave the quiz? Your progress will be saved to results.')) {
+    clearTimer();
+    showResults();
+  }
+}
+
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 updateBadge();
@@ -1855,26 +1885,11 @@ if (!isLocalDev() && (MP_SERVER_PROD.includes('YOUR-SERVICE') || !MP_SERVER_PROD
   setTimeout(() => toast('Multiplayer disabled: set MP_SERVER_PROD (wss://...) in the HTML'), 1200);
 }
 
-// Chat sidebar toggle
 function toggleSidebar() {
   const sb = document.getElementById('chatSidebar');
   if (!sb) return;
   sb.classList.toggle('hidden');
 }
-
-function isMobile() { return window.innerWidth <= 600; }
-
-// On mobile auto-collapse sidebar when entering chat
-const _origGoTo = goTo;
-function goTo(id) {
-  _origGoTo(id);
-  if (id === 'screen-chat' && isMobile()) {
-    const sb = document.getElementById('chatSidebar');
-    if (sb) sb.classList.add('hidden');
-  }
-}
-
-// Multiplayer is now handled via WebSocket backend (server.js)
 
 // Restore UI on reload
 try {
@@ -1883,6 +1898,27 @@ try {
     toggleNoTimer();
   }
   renderPlayersList();
+  
+  // FIX: Solo mode visual syncing
+  if (document.getElementById('mode-' + gameMode)) {
+    selectMode(gameMode);
+  }
+
+  const savedScreen = (JSON.parse(localStorage.getItem('qf_gamestate')||'{}').activeScreen) || 'screen-home';
+  const safeScreens = ['screen-quiz', 'screen-results'];
+  if (safeScreens.includes(savedScreen) && questions && questions.length) {
+    goTo(savedScreen);
+    if (savedScreen === 'screen-quiz') {
+      document.getElementById('livePlayersStrip').classList.toggle('hidden', gameMode !== 'multi');
+      if (gameMode === 'multi') renderLivePlayers();
+      showQuestion();
+      if (answered) {
+        document.getElementById('submitBtn').classList.add('hidden');
+        document.getElementById('nextBtn').classList.remove('hidden');
+        document.getElementById('nextBtn').textContent = currentQ < questions.length-1 ? 'Next →' : 'See Results';
+      }
+    }
+  }
 } catch (e) {}
 </script>
 </body>
