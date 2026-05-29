@@ -8,13 +8,78 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
+ /* ── AUTO-DETECT MOBILE DEVICES & QUIZ RESPONSIVE OVERRIDES ── */
   @media (max-width: 768px) {
+    /* 1. App Gutter Optimization */
     .app {
       padding: 1rem 1rem;
     }
-    .header {
+
+    /* 2. Quiz Header & Timer Tuning */
+    .quiz-header {
+      gap: 0.75rem;
       margin-bottom: 1.5rem;
     }
+    .timer-ring {
+      width: 44px;
+      height: 44px;
+    }
+    .timer-val {
+      font-size: 0.75rem;
+    }
+
+    /* 3. Question Typography Scaling */
+    .q-text {
+      font-size: 1.2rem;
+      line-height: 1.4;
+      margin-bottom: 1.2rem;
+    }
+
+    /* 4. Choice Options Compact Spacing */
+    .options-grid {
+      gap: 8px;
+    }
+    .option {
+      padding: 0.85rem 1rem;
+      font-size: 0.9rem;
+      gap: 10px;
+    }
+    .option-key {
+      width: 22px;
+      height: 22px;
+      font-size: 0.7rem;
+      border-radius: 4px;
+    }
+
+    /* 5. Full-Width Layout Controls */
+    .q-actions {
+      flex-direction: column;
+      gap: 8px;
+    }
+    .q-actions .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* 6. Score Summary Adjustments */
+    .score-hero {
+      padding: 1rem 0;
+    }
+    .score-big {
+      font-size: 3.5rem;
+    }
+    .score-stats {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 8px;
+    }
+    .stat-box {
+      padding: 0.75rem;
+    }
+    .stat-num {
+      font-size: 1.3rem;
+    }
+
+    /* 7. Setup & Mode Cards Stacking */
     .hero-title {
       font-size: 2.2rem;
     }
@@ -22,31 +87,25 @@
       grid-template-columns: 1fr;
       gap: 0.75rem;
     }
+
+    /* 8. Chat View Fallbacks */
     .chat-layout {
       flex-direction: column;
-      height: calc(100vh - 150px);
+      height: calc(100vh - 140px);
       min-height: 450px;
     }
     .chat-sidebar {
       width: 100%;
-      max-height: 180px;
+      max-height: 160px;
       border-right: none;
       border-bottom: 1px solid var(--border);
       padding-right: 0;
       margin-right: 0;
-      padding-bottom: 0.75rem;
-      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.5rem;
     }
     .chat-bubble {
       max-width: 92%;
-    }
-    .lobby-code {
-      font-size: 2rem;
-      padding: 0.75rem 1.2rem;
-      letter-spacing: 0.08em;
-    }
-    .score-big {
-      font-size: 3.5rem;
     }
   }
   :root {
