@@ -1539,7 +1539,14 @@ async function startGenerate() {
   try {
     const extractedText = await extractTextFromFiles();
     setProgress(35, 'Analyzing content with AI…');
+    
+    // Extracted array directly assigned here
     questions = await generateQuestions(extractedText, quizConfig);
+    
+    if (!questions || !questions.length) {
+      throw new Error('AI failed to produce valid questions. Please try again.');
+    }
+
     setProgress(90, 'Finalizing quiz…');
     await sleep(400);
     setProgress(100, 'Done!');
@@ -1564,7 +1571,13 @@ async function generateQuestions(text, cfg) {
     multi:  'Multi-answer (4 options, 2-3 correct, field "type":"multi")',
     typing: 'Type-in (no options, short 1-3 word answer, field "type":"typing")'
   };
-  const typeList = cfg.types.map(t => typeDescs[t]).join('; ');
+
+  const activeTypes = Array.isArray(cfg.types)
+    ? cfg.types
+    : Object.keys(cfg.types).filter(t => cfg.types[t]);
+
+  const typeList = activeTypes.map(t => typeDescs[t]).join('; ');
+
   const prompt = `You are a quiz generator. Output ONLY raw JSON — no markdown, no backticks, no extra text before or after. You MUST always close every bracket and quote. Never truncate. If you run out of space, output fewer questions but always end with valid closed JSON.
 Based on the provided document text, create exactly ${cfg.count} quiz questions at ${cfg.difficulty} difficulty.
 
@@ -1586,6 +1599,7 @@ REQUIREMENTS:
 
 Required output format (valid closed JSON, nothing else):
 {"questions":[{"type":"mcq","question":"...","options":["A","B","C","D"],"correct":[0],"explanation":"..."},{"type":"multi","question":"...","options":["A","B","C","D"],"correct":[0,2],"explanation":"..."},{"type":"typing","question":"...","answer":"...","explanation":"..."}]}`;
+
   const res = await fetch(apiBase + '/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
@@ -1597,27 +1611,29 @@ Required output format (valid closed JSON, nothing else):
     throw new Error(err.error?.message || `API error ${res.status}`);
   }
 
-  const data = await res.json();
-  let raw = (data.choices?.[0]?.message?.content || '').replace(/```json|```/g,'').trim();
+  const jsonRes = await res.json();
+  const rawText = jsonRes.choices[0].message.content;
+  
+  const parsedData = parseSafeJson(rawText);
+  // Safely extract just the questions array to return to startGenerate
+  return parsedData?.questions || parsedData || [];
+}
+
+function parseSafeJson(str) {
   try {
-    return JSON.parse(raw).questions || JSON.parse(raw);
-  } catch(e) {
-    let fixed = raw;
-    const quoteCount = (fixed.match(/(?<!\\)"/g) || []).length;
-    if (quoteCount % 2 !== 0) fixed += '"';
-    const opens = (fixed.match(/[{[]/g) || []).length;
-    const closes = (fixed.match(/[}\]]/g) || []).length;
-    const diff = opens - closes;
-    for (let i = 0; i < diff; i++) {
-      fixed += fixed.split('').reverse().find(c => c === '{' || c === '[') === '{' ? '}' : ']';
-    }
-    fixed = fixed.replace(/,\s*([}\]])/g, '$1');
-    try {
-      const parsed = JSON.parse(fixed);
-      return parsed.questions || parsed;
-    } catch(e2) {
-      throw new Error('AI returned invalid JSON. Try reducing question count or using a larger token limit.');
-    }
+    let clean = str.replace(/```json/g, '').replace(/```/g, '').trim();
+    let openBrackets = (clean.match(/{/g) || []).length;
+    let closeBrackets = (clean.match(/}/g) || []).length;
+    let openSquare = (clean.match(/\[/g) || []).length;
+    let closeSquare = (clean.match(/\]/g) || []).length;
+
+    while (openBrackets > closeBrackets) { clean += '}'; openBrackets--; }
+    while (openSquare > closeSquare) { clean += ']'; openSquare--; }
+
+    return JSON.parse(clean);
+  } catch (e) {
+    console.error("JSON parsing failed:", e);
+    return null;
   }
 }
 
