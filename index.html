@@ -1566,23 +1566,26 @@ async function generateQuestions(text, cfg) {
   };
   const typeList = cfg.types.map(t => typeDescs[t]).join('; ');
   const prompt = `You are a quiz generator. Output ONLY raw JSON — no markdown, no backticks, no extra text before or after. You MUST always close every bracket and quote. Never truncate. If you run out of space, output fewer questions but always end with valid closed JSON.
-
 Based on the provided document text, create exactly ${cfg.count} quiz questions at ${cfg.difficulty} difficulty.
 
 DOCUMENT TEXT:
 ${text}
 
+CRITICAL CONTENT FILTERS:
+- IGNORE all administrative text, exam instructions, grading rubrics, syllabus metadata, table of contents, copyright notices, and document headers.
+- NEVER generate questions about the exam or document format itself (e.g., NEVER ask "How much time is allowed?", "What are the rules?", or "How many marks is this section worth?").
+- EXTRACT ONLY the actual educational subject matter, core academic concepts, facts, or theories.
+
 REQUIREMENTS:
 - Question types to include (distribute evenly): ${typeList}
-- For MCQ: provide "options" array of 4 strings, "correct" as array with 1 index (0-based)
-- For multi: provide "options" array of 4 strings, "correct" as array of 2-3 indices
-- For typing: provide "answer" as the correct short string (1-3 words), no "options"
+- For MCQ: provide "options" array of 4 strings, "correct" as array with 1 index (0-based), "type": "mcq"
+- For multi: provide "options" array of 4 strings, "correct" as array of 2-3 indices, "type": "multi"
+- For typing: provide "answer" as the correct short string (1-3 words), no "options", "type": "typing"
 - Include a brief "explanation" for each question (1-2 sentences)
 - All questions must be directly based on the document content
 
 Required output format (valid closed JSON, nothing else):
 {"questions":[{"type":"mcq","question":"...","options":["A","B","C","D"],"correct":[0],"explanation":"..."},{"type":"multi","question":"...","options":["A","B","C","D"],"correct":[0,2],"explanation":"..."},{"type":"typing","question":"...","answer":"...","explanation":"..."}]}`;
-
   const res = await fetch(apiBase + '/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
