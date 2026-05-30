@@ -1539,7 +1539,14 @@ async function startGenerate() {
   try {
     const extractedText = await extractTextFromFiles();
     setProgress(35, 'Analyzing content with AI…');
+    
+    // Extracted array directly assigned here
     questions = await generateQuestions(extractedText, quizConfig);
+    
+    if (!questions || !questions.length) {
+      throw new Error('AI failed to produce valid questions. Please try again.');
+    }
+
     setProgress(90, 'Finalizing quiz…');
     await sleep(400);
     setProgress(100, 'Done!');
