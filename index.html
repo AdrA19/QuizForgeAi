@@ -981,7 +981,7 @@ function loadGameSession() {
   } catch (e) {}
 }
 
-loadGameSession();
+localStorage.removeItem('qf_gamestate');
 
 // ── CHAT GROUPS ──────────────────────────────────────────
 // Migrated structure: Nested Groups containing Chats
@@ -2150,35 +2150,9 @@ function toggleSidebar() {
   sb.classList.toggle('hidden');
 }
 
-// Restore UI on reload
-try {
-  if (document.getElementById('noTimerCheck')) {
-    document.getElementById('noTimerCheck').checked = !!(quizConfig && quizConfig.noTimer) || !!noTimer;
-    toggleNoTimer();
-  }
-  renderPlayersList();
-  
-  // FIX: Solo mode visual syncing
-  if (document.getElementById('mode-' + gameMode)) {
-    selectMode(gameMode);
-  }
-
-  const savedScreen = (JSON.parse(localStorage.getItem('qf_gamestate')||'{}').activeScreen) || 'screen-home';
-  const safeScreens = ['screen-quiz', 'screen-results'];
-  if (safeScreens.includes(savedScreen) && questions && questions.length) {
-    goTo(savedScreen);
-    if (savedScreen === 'screen-quiz') {
-      document.getElementById('livePlayersStrip').classList.toggle('hidden', gameMode !== 'multi');
-      if (gameMode === 'multi') renderLivePlayers();
-      showQuestion();
-      if (answered) {
-        document.getElementById('submitBtn').classList.add('hidden');
-        document.getElementById('nextBtn').classList.remove('hidden');
-        document.getElementById('nextBtn').textContent = currentQ < questions.length-1 ? 'Next →' : 'See Results';
-      }
-    }
-  }
-} catch (e) {}
+// Always start fresh
+renderPlayersList();
+if (document.getElementById('mode-' + gameMode)) selectMode(gameMode);
 </script>
 </body>
 </html>
