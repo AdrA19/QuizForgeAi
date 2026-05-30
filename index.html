@@ -1619,6 +1619,59 @@ function setProgress(pct, msg) {
   document.getElementById('genStatus').textContent = msg;
 }
 
+// ── GENERATION ────────────────────────────────────────────
+async function startGenerate() {
+  if (!apiKey) { openApiModal(); toast('Please configure your API key first'); return; }
+  const types = [];
+  if (document.getElementById('typeMCQ').checked) types.push('mcq');
+  if (document.getElementById('typeMulti').checked) types.push('multi');
+  if (document.getElementById('typeTyping').checked) types.push('typing');
+  if (!types.length) { toast('Select at least one question type'); return; }
+
+  quizConfig.noTimer = !!document.getElementById('noTimerCheck')?.checked;
+  noTimer = quizConfig.noTimer;
+
+  quizConfig = {
+    count: parseInt(document.getElementById('qCount').value),
+    noTimer,
+    timePerQ: noTimer ? 0 : Number(document.getElementById('timePerQ').value),
+    time: noTimer ? 0 : Number(document.getElementById('timePerQ').value),
+    types, difficulty, mode: gameMode,
+    hostName: document.getElementById('hostName')?.value.trim() || 'Host'
+  };
+  saveGameSession();
+
+  goTo('screen-generating');
+  setProgress(10, 'Reading your documents…');
+
+  try {
+    const extractedText = await extractTextFromFiles();
+    setProgress(35, 'Analyzing content with AI…');
+    
+    questions = await generateQuestions(extractedText, quizConfig);
+    
+    if (!questions || !questions.length) {
+      throw new Error('AI failed to produce valid questions. Please try again.');
+    }
+
+    setProgress(90, 'Finalizing quiz…');
+    await sleep(400);
+    setProgress(100, 'Done!');
+    await sleep(300);
+    if (gameMode === 'multi') setupLobby();
+    else startQuiz();
+  } catch(e) {
+    console.error(e);
+    goTo('screen-setup');
+    toast('Error: ' + (e.message || 'Generation failed. Check your API key.'));
+  }
+}
+
+function setProgress(pct, msg) {
+  document.getElementById('genProgress').style.width = pct + '%';
+  document.getElementById('genStatus').textContent = msg;
+}
+
 async function generateQuestions(text, cfg) {
   const typeDescs = {
     mcq:    'MCQ (4 options, exactly 1 correct, field "type":"mcq")',
@@ -1626,37 +1679,49 @@ async function generateQuestions(text, cfg) {
     typing: 'Type-in (no options, short 1-3 word answer, field "type":"typing")'
   };
 
-  // Safely handles both an array ['mcq', 'multi'] or an object {mcq: true, multi: false}
   const activeTypes = Array.isArray(cfg.types)
     ? cfg.types
     : Object.keys(cfg.types).filter(t => cfg.types[t]);
 
   const typeList = activeTypes.map(t => typeDescs[t]).join('; ');
 
-  const prompt = `You are a strict academic tutor extracting knowledge for a quiz. Output ONLY raw JSON — no markdown, no backticks, no extra text. 
+  const prompt = `You are a university professor creating an academic test. Output ONLY raw JSON — no markdown, no extra text.
 
-CRITICAL DIRECTIVE: You are strictly forbidden from asking questions about the document's formatting, exam rules, time limits, grading rubrics, or administrative instructions. You must ONLY extract and test the core academic subject matter (e.g., historical facts, scientific theories, mathematical concepts, vocabulary).
-
-Based on the provided document text, create exactly ${cfg.count} quiz questions at ${cfg.difficulty} difficulty focusing SOLELY on the educational concepts.
-
---- START DOCUMENT TEXT ---
+DOCUMENT TEXT:
+---
 ${text}
---- END DOCUMENT TEXT ---
+---
 
-FINAL WARNING BEFORE GENERATING:
-- DO NOT ask "How much time is allowed?" or "What are the instructions?"
-- FOCUS 100% on the academic theories, facts, and subject matter found in the text.
-- If the first few pages are just a syllabus or exam rules, SKIP THEM entirely.
+STRICT RULES:
+1. SKIP all syllabus metadata, exam durations, grading rules, and administrative text.
+2. EVERY question must test a factual, educational, or theoretical concept.
 
 REQUIREMENTS:
-- Question types to include (distribute evenly): ${typeList}
-- For MCQ: provide "options" array of 4 strings, "correct" as array with 1 index (0-based), "type": "mcq"
-- For multi: provide "options" array of 4 strings, "correct" as array of 2-3 indices, "type": "multi"
-- For typing: provide "answer" as the correct short string (1-3 words), no "options", "type": "typing"
-- Include a brief "explanation" for each question (1-2 sentences)
+- Question types to include: ${typeList}
+- For MCQ: provide "options" (4 strings), "correct" (array with 1 index).
+- For multi: provide "options" (4 strings), "correct" (array of 2-3 indices).
+- For typing: provide "answer" (1-3 words), no "options".
 
-Required output format (valid closed JSON, nothing else):
-{"questions":[{"type":"mcq","question":"...","options":["A","B","C","D"],"correct":[0],"explanation":"..."},{"type":"multi","question":"...","options":["A","B","C","D"],"correct":[0,2],"explanation":"..."},{"type":"typing","question":"...","answer":"...","explanation":"..."}]}`;
+REQUIRED JSON STRUCTURE:
+You MUST include a "concept_tested" field first. This forces you to identify the educational topic. If the concept is "Exam Rules" or "Grading", YOU MUST NOT generate the question.
+
+{"questions":[
+  {
+    "concept_tested": "State the specific academic topic here (e.g., 'Cellular Respiration' or 'Historical Dates')",
+    "type": "mcq",
+    "question": "...",
+    "options": ["A","B","C","D"],
+    "correct": [0],
+    "explanation": "..."
+  },
+  {
+    "concept_tested": "State the academic topic...",
+    "type": "typing",
+    "question": "...",
+    "answer": "...",
+    "explanation": "..."
+  }
+]}`;
 
   const res = await fetch(apiBase + '/chat/completions', {
     method: 'POST',
@@ -1673,7 +1738,6 @@ Required output format (valid closed JSON, nothing else):
   const rawText = jsonRes.choices[0].message.content;
   
   const parsedData = parseSafeJson(rawText);
-  // Safely extract just the questions array to return to startGenerate
   return parsedData?.questions || parsedData || [];
 }
 
