@@ -1620,6 +1620,7 @@ function setProgress(pct, msg) {
 }
 
 // ── GENERATION ────────────────────────────────────────────
+// ── GENERATION ────────────────────────────────────────────
 async function startGenerate() {
   if (!apiKey) { openApiModal(); toast('Please configure your API key first'); return; }
   const types = [];
@@ -1684,6 +1685,7 @@ async function generateQuestions(text, cfg) {
     : Object.keys(cfg.types).filter(t => cfg.types[t]);
 
   const typeList = activeTypes.map(t => typeDescs[t]).join('; ');
+  const targetCount = cfg.count || 10;
 
   const prompt = `You are a university professor creating an academic test. Output ONLY raw JSON — no markdown, no extra text.
 
@@ -1695,30 +1697,25 @@ ${text}
 STRICT RULES:
 1. SKIP all syllabus metadata, exam durations, grading rules, and administrative text.
 2. EVERY question must test a factual, educational, or theoretical concept.
+3. You MUST generate EXACTLY ${targetCount} questions — no more, no fewer.
+4. Spread question types evenly. If only MCQ selected, all ${targetCount} are MCQ.
+5. Never repeat a question. If content runs thin, use sub-concepts and variations.
 
 REQUIREMENTS:
 - Question types to include: ${typeList}
-- For MCQ: provide "options" (4 strings), "correct" (array with 1 index).
-- For multi: provide "options" (4 strings), "correct" (array of 2-3 indices).
-- For typing: provide "answer" (1-3 words), no "options".
+- MCQ: "options" (4 strings), "correct" (array with 1 index)
+- Multi: "options" (4 strings), "correct" (2-3 indices)
+- Typing: "answer" (1-3 words), no "options"
 
-REQUIRED JSON STRUCTURE:
-You MUST include a "concept_tested" field first. This forces you to identify the educational topic. If the concept is "Exam Rules" or "Grading", YOU MUST NOT generate the question.
+OUTPUT EXACTLY ${targetCount} objects in the questions array. Count them before responding.
 
 {"questions":[
   {
-    "concept_tested": "State the specific academic topic here (e.g., 'Cellular Respiration' or 'Historical Dates')",
+    "concept_tested": "specific academic topic",
     "type": "mcq",
     "question": "...",
     "options": ["A","B","C","D"],
     "correct": [0],
-    "explanation": "..."
-  },
-  {
-    "concept_tested": "State the academic topic...",
-    "type": "typing",
-    "question": "...",
-    "answer": "...",
     "explanation": "..."
   }
 ]}`;
@@ -1739,6 +1736,24 @@ You MUST include a "concept_tested" field first. This forces you to identify the
   
   const parsedData = parseSafeJson(rawText);
   return parsedData?.questions || parsedData || [];
+}
+
+function parseSafeJson(str) {
+  try {
+    let clean = str.replace(/```json/g, '').replace(/```/g, '').trim();
+    let openBrackets = (clean.match(/{/g) || []).length;
+    let closeBrackets = (clean.match(/}/g) || []).length;
+    let openSquare = (clean.match(/\[/g) || []).length;
+    let closeSquare = (clean.match(/\]/g) || []).length;
+
+    while (openBrackets > closeBrackets) { clean += '}'; openBrackets--; }
+    while (openSquare > closeSquare) { clean += ']'; openSquare--; }
+
+    return JSON.parse(clean);
+  } catch (e) {
+    console.error("JSON parsing failed:", e);
+    return null;
+  }
 }
 
 function parseSafeJson(str) {
