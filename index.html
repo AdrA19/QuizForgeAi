@@ -371,7 +371,6 @@
       <label>Provider preset</label>
       <div class="provider-pills">
         <div class="provider-pill active" id="pill-openai" onclick="setProvider('openai')">OpenAI</div>
-        <div class="provider-pill" id="pill-anthropic" onclick="setProvider('anthropic')">Anthropic</div>
         <div class="provider-pill" id="pill-deepseek" onclick="setProvider('deepseek')">DeepSeek</div>
         <div class="provider-pill" id="pill-groq" onclick="setProvider('groq')">Groq</div>
         <div class="provider-pill" id="pill-custom" onclick="setProvider('custom')">Custom</div>
@@ -782,7 +781,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 
 const PROVIDERS = {
   openai:    { base: 'https://api.openai.com/v1',       model: 'gpt-4o-mini' },
-  anthropic: { base: 'https://api.anthropic.com/v1',    model: 'claude-3-5-haiku-20241022' },
   deepseek:  { base: 'https://api.deepseek.com/v1',     model: 'deepseek-chat' },
   groq:      { base: 'https://api.groq.com/openai/v1',  model: 'llama-3.1-8b-instant' },
   custom:    { base: '', model: '' }
@@ -1226,7 +1224,6 @@ function setProvider(name, updateInputs = true) {
   }
   const hints = {
     openai: 'OpenAI-compatible. /chat/completions will be appended.',
-    anthropic: '⚠ Anthropic uses a different auth header. Works if your endpoint is OpenAI-compatible.',
     deepseek: 'DeepSeek is OpenAI-compatible — drop-in replacement.',
     groq: 'Groq uses an OpenAI-compatible endpoint.',
     custom: 'Any OpenAI-compatible base URL.'
@@ -1540,115 +1537,6 @@ async function startGenerate() {
     const extractedText = await extractTextFromFiles();
     setProgress(35, 'Analyzing content with AI…');
     
-    // Extracted array directly assigned here
-    questions = await generateQuestions(extractedText, quizConfig);
-    
-    if (!questions || !questions.length) {
-      throw new Error('AI failed to produce valid questions. Please try again.');
-    }
-
-    setProgress(90, 'Finalizing quiz…');
-    await sleep(400);
-    setProgress(100, 'Done!');
-    await sleep(300);
-    if (gameMode === 'multi') setupLobby();
-    else startQuiz();
-  } catch(e) {
-    console.error(e);
-    goTo('screen-setup');
-    toast('Error: ' + (e.message || 'Generation failed. Check your API key.'));
-  }
-}
-
-function setProgress(pct, msg) {
-  document.getElementById('genProgress').style.width = pct + '%';
-  document.getElementById('genStatus').textContent = msg;
-}
-
-// ── GENERATION ────────────────────────────────────────────
-async function startGenerate() {
-  if (!apiKey) { openApiModal(); toast('Please configure your API key first'); return; }
-  const types = [];
-  if (document.getElementById('typeMCQ').checked) types.push('mcq');
-  if (document.getElementById('typeMulti').checked) types.push('multi');
-  if (document.getElementById('typeTyping').checked) types.push('typing');
-  if (!types.length) { toast('Select at least one question type'); return; }
-
-  quizConfig.noTimer = !!document.getElementById('noTimerCheck')?.checked;
-  noTimer = quizConfig.noTimer;
-
-  quizConfig = {
-    count: parseInt(document.getElementById('qCount').value),
-    noTimer,
-    timePerQ: noTimer ? 0 : Number(document.getElementById('timePerQ').value),
-    time: noTimer ? 0 : Number(document.getElementById('timePerQ').value),
-    types, difficulty, mode: gameMode,
-    hostName: document.getElementById('hostName')?.value.trim() || 'Host'
-  };
-  saveGameSession();
-
-  goTo('screen-generating');
-  setProgress(10, 'Reading your documents…');
-
-  try {
-    const extractedText = await extractTextFromFiles();
-    setProgress(35, 'Analyzing content with AI…');
-    
-    // Extracted array directly assigned here
-    questions = await generateQuestions(extractedText, quizConfig);
-    
-    if (!questions || !questions.length) {
-      throw new Error('AI failed to produce valid questions. Please try again.');
-    }
-
-    setProgress(90, 'Finalizing quiz…');
-    await sleep(400);
-    setProgress(100, 'Done!');
-    await sleep(300);
-    if (gameMode === 'multi') setupLobby();
-    else startQuiz();
-  } catch(e) {
-    console.error(e);
-    goTo('screen-setup');
-    toast('Error: ' + (e.message || 'Generation failed. Check your API key.'));
-  }
-}
-
-function setProgress(pct, msg) {
-  document.getElementById('genProgress').style.width = pct + '%';
-  document.getElementById('genStatus').textContent = msg;
-}
-
-// ── GENERATION ────────────────────────────────────────────
-// ── GENERATION ────────────────────────────────────────────
-async function startGenerate() {
-  if (!apiKey) { openApiModal(); toast('Please configure your API key first'); return; }
-  const types = [];
-  if (document.getElementById('typeMCQ').checked) types.push('mcq');
-  if (document.getElementById('typeMulti').checked) types.push('multi');
-  if (document.getElementById('typeTyping').checked) types.push('typing');
-  if (!types.length) { toast('Select at least one question type'); return; }
-
-  quizConfig.noTimer = !!document.getElementById('noTimerCheck')?.checked;
-  noTimer = quizConfig.noTimer;
-
-  quizConfig = {
-    count: parseInt(document.getElementById('qCount').value),
-    noTimer,
-    timePerQ: noTimer ? 0 : Number(document.getElementById('timePerQ').value),
-    time: noTimer ? 0 : Number(document.getElementById('timePerQ').value),
-    types, difficulty, mode: gameMode,
-    hostName: document.getElementById('hostName')?.value.trim() || 'Host'
-  };
-  saveGameSession();
-
-  goTo('screen-generating');
-  setProgress(10, 'Reading your documents…');
-
-  try {
-    const extractedText = await extractTextFromFiles();
-    setProgress(35, 'Analyzing content with AI…');
-    
     questions = await generateQuestions(extractedText, quizConfig);
     
     if (!questions || !questions.length) {
@@ -1736,42 +1624,6 @@ OUTPUT EXACTLY ${targetCount} objects in the questions array. Count them before 
   
   const parsedData = parseSafeJson(rawText);
   return parsedData?.questions || parsedData || [];
-}
-
-function parseSafeJson(str) {
-  try {
-    let clean = str.replace(/```json/g, '').replace(/```/g, '').trim();
-    let openBrackets = (clean.match(/{/g) || []).length;
-    let closeBrackets = (clean.match(/}/g) || []).length;
-    let openSquare = (clean.match(/\[/g) || []).length;
-    let closeSquare = (clean.match(/\]/g) || []).length;
-
-    while (openBrackets > closeBrackets) { clean += '}'; openBrackets--; }
-    while (openSquare > closeSquare) { clean += ']'; openSquare--; }
-
-    return JSON.parse(clean);
-  } catch (e) {
-    console.error("JSON parsing failed:", e);
-    return null;
-  }
-}
-
-function parseSafeJson(str) {
-  try {
-    let clean = str.replace(/```json/g, '').replace(/```/g, '').trim();
-    let openBrackets = (clean.match(/{/g) || []).length;
-    let closeBrackets = (clean.match(/}/g) || []).length;
-    let openSquare = (clean.match(/\[/g) || []).length;
-    let closeSquare = (clean.match(/\]/g) || []).length;
-
-    while (openBrackets > closeBrackets) { clean += '}'; openBrackets--; }
-    while (openSquare > closeSquare) { clean += ']'; openSquare--; }
-
-    return JSON.parse(clean);
-  } catch (e) {
-    console.error("JSON parsing failed:", e);
-    return null;
-  }
 }
 
 function parseSafeJson(str) {
