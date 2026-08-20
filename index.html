@@ -195,10 +195,6 @@
     height: 32px;
   }
 
-  /* Decorative 3D scene stays out of the way on small screens */
-  body.mobile-ui .scene3d {
-    display: none;
-  }
   :root {
     --bg: #0a0a0f;
     --surface: #13131a;
@@ -470,23 +466,42 @@
   .display-pill:hover { border-color: var(--accent); color: var(--accent); }
   .display-pill.active { border-color: var(--accent); background: rgba(124,109,250,0.12); color: var(--accent); }
 
-  /* ── INTERACTIVE 3D SCENE (decorative, homepage gutters) ── */
-  .scene3d { position: fixed; inset: 0; z-index: 0; pointer-events: none; perspective: 1200px; overflow: hidden; transition: opacity 0.5s ease; }
-  .scene3d.hidden { opacity: 0; visibility: hidden; }
-  @media (max-width: 900px) { .scene3d { display: none; } }
-  .shape-wrap { position: absolute; transform-style: preserve-3d; pointer-events: auto; cursor: grab; transition: transform 0.15s ease-out; }
-  .shape-wrap:active { cursor: grabbing; }
-  .cube { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; animation: spin3d 20s linear infinite; }
-  .cube.spin-fast { animation-duration: 1.6s; animation-timing-function: ease-out; }
-  @keyframes spin3d { from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } to { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); } }
-  .face { position: absolute; inset: 0; border-radius: 6px; border: 1px solid var(--face-border); background: var(--face-bg); backdrop-filter: blur(2px); }
-  .f-front  { transform: translateZ(calc(var(--s) / 2)); }
-  .f-back   { transform: translateZ(calc(var(--s) / -2)) rotateY(180deg); }
-  .f-right  { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
-  .f-left   { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
-  .f-top    { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
-  .f-bottom { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
-  @media (prefers-reduced-motion: reduce) { .cube { animation: none; } }
+
+  /* ── STUDY / QUIZ ENHANCEMENTS ── */
+  .feature-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:1.5rem; }
+  .feature-card { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-lg); padding:1.1rem; transition:transform .2s,border-color .2s,background .2s; }
+  .feature-card:hover { transform:translateY(-2px); border-color:var(--border-bright); background:var(--surface3); }
+  .feature-icon { font-size:1.4rem; margin-bottom:.55rem; }
+  .feature-title { font-family:var(--font-head); font-weight:700; font-size:.9rem; margin-bottom:.25rem; }
+  .feature-desc { color:var(--text-muted); font-size:.76rem; line-height:1.45; }
+  .config-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .config-wide { grid-column:1/-1; }
+  .toggle-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:.7rem 0; }
+  .toggle-copy { flex:1; }
+  .toggle-title { font-size:.88rem; font-weight:500; }
+  .toggle-desc { font-size:.72rem; color:var(--text-muted); margin-top:2px; }
+  .switch { position:relative; width:42px; height:24px; flex-shrink:0; }
+  .switch input { opacity:0; width:0; height:0; }
+  .switch-slider { position:absolute; inset:0; cursor:pointer; background:var(--surface3); border:1px solid var(--border); border-radius:999px; transition:.2s; }
+  .switch-slider:before { content:''; position:absolute; width:18px; height:18px; left:2px; top:2px; background:var(--text-muted); border-radius:50%; transition:.2s; }
+  .switch input:checked + .switch-slider { background:var(--accent); border-color:var(--accent); }
+  .switch input:checked + .switch-slider:before { transform:translateX(18px); background:white; }
+  .quiz-toolbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:1rem; }
+  .question-tools { display:flex; gap:8px; align-items:center; margin-top:1rem; }
+  .flag-btn { border-color:rgba(245,200,66,.3); color:var(--gold); }
+  .flag-btn.active { background:rgba(245,200,66,.12); border-color:var(--gold); }
+  .question-counter { font-family:var(--font-mono); font-size:.72rem; color:var(--text-dim); margin-left:auto; }
+  .results-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:1.5rem; }
+  .review-list { display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow:auto; }
+  .review-item { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r); padding:1rem; }
+  .review-item.correct { border-left:3px solid var(--success); }
+  .review-item.wrong { border-left:3px solid var(--danger); }
+  .review-q { font-weight:600; font-size:.9rem; line-height:1.4; }
+  .review-answer { font-size:.78rem; color:var(--text-muted); margin-top:.5rem; line-height:1.5; }
+  .streak-card { display:flex; align-items:center; justify-content:space-between; margin-top:1.5rem; }
+  .streak-number { font-family:var(--font-head); font-size:1.8rem; font-weight:800; color:var(--gold); }
+  .kbd { font-family:var(--font-mono); font-size:.65rem; padding:2px 6px; border:1px solid var(--border); border-radius:4px; color:var(--text-dim); background:var(--surface2); }
+  @media(max-width:700px){ .feature-grid,.config-grid{grid-template-columns:1fr;} .config-wide{grid-column:auto;} .streak-card{align-items:flex-start;gap:12px;} }
 </style>
 </head>
 <body>
@@ -494,15 +509,7 @@
 <div class="orb orb1"></div>
 <div class="orb orb2"></div>
 <div class="orb orb3"></div>
-<div class="scene3d" id="scene3d">
-  <div class="shape-wrap" id="sw1"></div>
-  <div class="shape-wrap" id="sw2"></div>
-  <div class="shape-wrap" id="sw3"></div>
-  <div class="shape-wrap" id="sw4"></div>
-  <div class="shape-wrap" id="sw5"></div>
-  <div class="shape-wrap" id="sw6"></div>
-  <div class="shape-wrap" id="sw7"></div>
-  <div class="shape-wrap" id="sw8"></div>
+
 </div>
 
 <div class="modal-overlay hidden" id="apiModal">
@@ -628,6 +635,17 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="reviewModal">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-title">🔎 Quiz Review</div>
+    <div class="modal-sub">See what you answered, the correct answer, and the explanation.</div>
+    <div class="review-list" id="reviewList"></div>
+    <div style="margin-top:1rem;display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="closeReviewModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="app">
   <div class="header">
     <div class="logo" style="cursor:pointer;" onclick="goTo('screen-home')">Quiz<span>Forge</span> AI</div>
@@ -661,6 +679,30 @@
         </div>
         <span style="color:var(--accent);font-size:1.2rem;font-weight:bold;margin-left:auto;">→</span>
       </button>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <div class="feature-title">Smart Review</div>
+        <div class="feature-desc">Retry only the questions you missed after every quiz.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">Adaptive Setup</div>
+        <div class="feature-desc">Shuffle questions and options for a fresh attempt every time.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <div class="feature-title">Progress Tracking</div>
+        <div class="feature-desc">Keep your local quiz history and build a study streak.</div>
+      </div>
+    </div>
+    <div class="card streak-card">
+      <div>
+        <div style="font-family:var(--font-head);font-weight:700;">🔥 Study streak</div>
+        <div style="font-size:.78rem;color:var(--text-muted);margin-top:3px;">Complete at least one quiz per day.</div>
+      </div>
+      <div class="streak-number" id="streakNumber">0 days</div>
     </div>
     <div style="margin-top:2.5rem;">
       <div style="font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">Supported formats</div>
@@ -776,6 +818,22 @@
             <button class="btn btn-secondary btn-sm" id="diff-easy" onclick="setDiff('easy')" style="flex:1">🟢 Easy</button>
             <button class="btn btn-primary btn-sm" id="diff-medium" onclick="setDiff('medium')" style="flex:1">🟡 Medium</button>
             <button class="btn btn-secondary btn-sm" id="diff-hard" onclick="setDiff('hard')" style="flex:1">🔴 Hard</button>
+          </div>
+        </div>
+        <div class="card config-wide">
+          <label>Quiz title</label>
+          <input type="text" id="quizTitle" placeholder="e.g. Chemistry Chapter 7 Review" maxlength="80">
+          <div class="hint">Used in your quiz history and exported results.</div>
+        </div>
+        <div class="card config-wide">
+          <label>Quiz options</label>
+          <div class="toggle-row">
+            <div class="toggle-copy"><div class="toggle-title">🔀 Shuffle questions</div><div class="toggle-desc">Randomize question order each time the quiz starts.</div></div>
+            <label class="switch"><input type="checkbox" id="shuffleQuestions" checked><span class="switch-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-copy"><div class="toggle-title">🔀 Shuffle answer choices</div><div class="toggle-desc">Randomize MCQ and multi-answer options while preserving correct answers.</div></div>
+            <label class="switch"><input type="checkbox" id="shuffleOptions" checked><span class="switch-slider"></span></label>
           </div>
         </div>
       </div>
@@ -901,6 +959,12 @@
       <div class="live-players" id="livePlayers"></div>
       <div class="divider"></div>
     </div>
+    <div class="quiz-toolbar">
+      <button class="btn btn-ghost btn-sm flag-btn" id="flagBtn" onclick="toggleFlag()">🔖 Flag question</button>
+      <span class="question-counter" id="flagCounter">0 flagged</span>
+      <span class="kbd">A-D</span><span style="font-size:.7rem;color:var(--text-dim);">answer</span>
+      <span class="kbd">Enter</span><span style="font-size:.7rem;color:var(--text-dim);">submit/next</span>
+    </div>
     <div id="questionArea">
       <div class="q-num" id="qNum">Q1</div>
       <div class="q-type-badge badge-mcq" id="qTypeBadge">MCQ</div>
@@ -943,6 +1007,10 @@
       <button class="btn btn-primary" onclick="retakeQuiz()">↺ Retake</button>
       <button class="btn btn-secondary" onclick="resetQuizSetup()">+ New Quiz</button>
       <button class="btn btn-ghost" onclick="goTo('screen-home')">🏠 Home</button>
+      <button class="btn btn-secondary" id="retryMistakesBtn" onclick="retryMistakes()">🎯 Retry Mistakes</button>
+      <button class="btn btn-ghost" onclick="openReviewModal()">🔎 Review Answers</button>
+      <button class="btn btn-ghost" onclick="exportResults()">⬇ Export Results</button>
+      <button class="btn btn-ghost" onclick="copyResults()">📋 Copy Summary</button>
     </div>
   </div>
 </div>
@@ -997,6 +1065,11 @@ let difficulty = 'medium';
 let chatStreaming = false;
 let noTimer = false; // No timer global
 let apiMaxTokens = parseInt(localStorage.getItem('qf_maxtokens') || '2000');
+let answerHistory = [];
+let flaggedQuestions = new Set();
+let reviewMode = false;
+let lastResultPct = 0;
+
 
 // ── MULTIPLAYER BACKEND (WebSocket) ────────────────────────
 const MP_SERVER_PROD = 'wss://quizforge-multiplayer.onrender.com';
@@ -1332,8 +1405,6 @@ function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
-  const scene = document.getElementById('scene3d');
-  if (scene) scene.classList.toggle('hidden', id !== 'screen-home');
   if (id === 'screen-home') renderQuizHistory();
   if (id === 'screen-chat') {
     renderGroupList();
@@ -1701,6 +1772,9 @@ async function startGenerate() {
     time: noTimer ? 0 : Number(document.getElementById('timePerQ').value),
     types, difficulty, mode: gameMode,
     hostName: document.getElementById('hostName')?.value.trim() || 'Host',
+    title: document.getElementById('quizTitle')?.value.trim() || '',
+    shuffleQuestions: !!document.getElementById('shuffleQuestions')?.checked,
+    shuffleOptions: !!document.getElementById('shuffleOptions')?.checked,
     sourceNames: uploadedFiles.map(f => f.name)
   };
   saveGameSession();
@@ -1899,10 +1973,20 @@ function startQuiz(broadcast = true) {
     mpSend({ type: 'start_quiz' });
   }
   currentQ = 0; score = 0; correctCount = 0; wrongCount = 0; timeoutCount = 0; questionTimes = [];
+  answerHistory = [];
+  flaggedQuestions = new Set();
   if (!questions || !questions.length) {
     toast('No questions loaded. Please generate a quiz first.');
     goTo('screen-setup');
     return;
+  }
+  if (quizConfig.shuffleQuestions && !reviewMode) {
+    questions = [...questions];
+    for (let i = questions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [questions[i], questions[j]] = [questions[j], questions[i]];
+    }
+    questions.forEach(q => { delete q._shuffled; });
   }
   goTo('screen-quiz');
   document.getElementById('livePlayersStrip').classList.toggle('hidden', gameMode !== 'multi');
@@ -1932,7 +2016,8 @@ function showQuestion() {
   document.getElementById('qNum').textContent = `Q${currentQ+1}`;
   document.getElementById('qLabel').textContent = `Question ${currentQ+1} of ${questions.length}`;
   document.getElementById('qScore').textContent = `Score: ${score}`;
-  document.getElementById('qProgressFill').style.width = ((currentQ/questions.length)*100) + '%';
+  document.getElementById('qProgressFill').style.width = (((currentQ+1)/questions.length)*100) + '%';
+  updateFlagUi();
   document.getElementById('qText').textContent = q.question;
   document.getElementById('explanation').classList.remove('show');
   document.getElementById('timeoutBanner').classList.remove('show');
@@ -1951,6 +2036,13 @@ function showQuestion() {
     og.classList.add('hidden'); tw.classList.remove('hidden');
   } else {
     og.classList.remove('hidden'); tw.classList.add('hidden');
+    if (quizConfig.shuffleOptions && !q._shuffled) {
+      const pairs = (q.options || []).map((opt, i) => ({ opt, i }));
+      for (let i = pairs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pairs[i], pairs[j]] = [pairs[j], pairs[i]]; }
+      q.options = pairs.map(x => x.opt);
+      q.correct = pairs.reduce((acc, x, newIndex) => (q.correct || []).includes(x.i) ? acc.concat(newIndex) : acc, []);
+      q._shuffled = true;
+    }
     og.innerHTML = (q.options || []).map((opt,i) => `
       <button class="option" onclick="selectOption(${i})" id="opt-${i}">
         <span class="option-key">${String.fromCharCode(65+i)}</span>
@@ -2007,6 +2099,19 @@ function submitAnswer(fromTimer = false) {
     revealOptions(q, fromTimer);
     if (fromTimer) document.getElementById('timeoutBanner').classList.add('show');
   }
+
+  answerHistory[currentQ] = {
+    question: q.question,
+    type: q.type,
+    selected: [...selectedAnswers],
+    typed: q.type === 'typing' ? document.getElementById('typeAnswerInput').value.trim() : '',
+    correct: [...(q.correct || [])],
+    answer: q.answer || '',
+    options: [...(q.options || [])],
+    isCorrect,
+    timedOut: fromTimer,
+    explanation: q.explanation || ''
+  };
 
   // FIXED POINTS CALCULATION (No-Timer / NaN Bug)
   if (isCorrect) {
@@ -2107,6 +2212,9 @@ function simulateAIScores() {
 // ── RESULTS ───────────────────────────────────────────────
 function showResults() {
   const pct = Math.round((correctCount/questions.length)*100);
+  lastResultPct = pct;
+  const retryBtn = document.getElementById('retryMistakesBtn');
+  if (retryBtn) retryBtn.disabled = !answerHistory.some(a => a && !a.isCorrect);
   const avg = questionTimes.length ? Math.round(questionTimes.reduce((a,b)=>a+b,0)/questionTimes.length) : 0;
   document.getElementById('finalScore').textContent = pct + '%';
   document.getElementById('finalLabel').textContent = pct>=80 ? '🏆 Excellent work!' : pct>=60 ? '👍 Good job!' : '📚 Keep studying!';
@@ -2138,7 +2246,9 @@ function showResults() {
     </div>`;
   }).join('');
   if (questions.length) saveQuizHistory(pct);
+  if (!reviewMode) updateStudyStreak();
   goTo('screen-results');
+  renderStudyStreak();
 }
 
 function retakeQuiz() { startQuiz(); }
@@ -2162,6 +2272,130 @@ function confirmJoin() {
   };
   sendJoin();
 }
+
+// ── STUDY ENHANCEMENTS ─────────────────────────────────────
+function toggleFlag() {
+  if (flaggedQuestions.has(currentQ)) flaggedQuestions.delete(currentQ);
+  else flaggedQuestions.add(currentQ);
+  updateFlagUi();
+}
+function updateFlagUi() {
+  const btn = document.getElementById('flagBtn');
+  const counter = document.getElementById('flagCounter');
+  const flagged = flaggedQuestions.has(currentQ);
+  if (btn) {
+    btn.classList.toggle('active', flagged);
+    btn.textContent = flagged ? '🔖 Flagged' : '🔖 Flag question';
+  }
+  if (counter) counter.textContent = `${flaggedQuestions.size} flagged`;
+}
+function openReviewModal() {
+  const list = document.getElementById('reviewList');
+  if (!list) return;
+  if (!answerHistory.length) {
+    list.innerHTML = '<div class="past-quizzes-empty">No answers recorded yet.</div>';
+  } else {
+    list.innerHTML = answerHistory.map((a,i) => {
+      if (!a) return '';
+      let selectedText = a.type === 'typing'
+        ? (a.typed || 'No answer')
+        : (a.selected.length ? a.selected.map(x => a.options[x]).join(', ') : 'No answer');
+      let correctText = a.type === 'typing'
+        ? a.answer
+        : (a.correct.length ? a.correct.map(x => a.options[x]).join(', ') : '—');
+      return `<div class="review-item ${a.isCorrect ? 'correct' : 'wrong'}">
+        <div class="review-q">Q${i+1}. ${escHtml(a.question)}</div>
+        <div class="review-answer"><strong>Your answer:</strong> ${escHtml(selectedText)}<br>
+        <strong>Correct:</strong> ${escHtml(correctText)}
+        ${a.timedOut ? '<br><span style="color:var(--timeout)">⏰ Timed out</span>' : ''}
+        ${a.explanation ? `<br><span style="display:block;margin-top:5px;">💡 ${escHtml(a.explanation)}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('reviewModal').classList.remove('hidden');
+}
+function closeReviewModal() { document.getElementById('reviewModal').classList.add('hidden'); }
+function retryMistakes() {
+  const mistakes = questions.filter((q,i) => answerHistory[i] && !answerHistory[i].isCorrect);
+  if (!mistakes.length) { toast('No mistakes to retry! 🎉'); return; }
+  questions = mistakes.map(q => {
+    const copy = JSON.parse(JSON.stringify(q));
+    delete copy._shuffled;
+    return copy;
+  });
+  reviewMode = true;
+  currentQ = 0; score = 0; correctCount = 0; wrongCount = 0; timeoutCount = 0; questionTimes = [];
+  answerHistory = [];
+  flaggedQuestions = new Set();
+  goTo('screen-quiz');
+  showQuestion();
+  toast(`Retrying ${questions.length} missed question${questions.length === 1 ? '' : 's'}`);
+}
+function buildResultsSummary() {
+  const title = quizConfig.title || 'Quiz';
+  return `${title}\nScore: ${lastResultPct}%\nCorrect: ${correctCount}/${questions.length}\nWrong: ${wrongCount}\nTimed out: ${timeoutCount}\nAverage time: ${document.getElementById('statTime')?.textContent || '0s'}`;
+}
+function copyResults() {
+  const summary = buildResultsSummary();
+  navigator.clipboard?.writeText(summary).then(() => toast('Results copied!')).catch(() => toast(summary));
+}
+function exportResults() {
+  const payload = {
+    title: quizConfig.title || 'Quiz',
+    score: lastResultPct,
+    correct: correctCount,
+    wrong: wrongCount,
+    timedOut: timeoutCount,
+    questions: answerHistory,
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (quizConfig.title || 'quiz-results').replace(/[^\w\-]+/g,'-').toLowerCase() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Results exported!');
+}
+function updateStudyStreak() {
+  const key = 'qf_streak';
+  let data;
+  try { data = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) { data = {}; }
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayKey = today.toISOString().slice(0,10);
+  if (data.last === todayKey) return data.streak || 1;
+  const prev = new Date(today); prev.setDate(prev.getDate()-1);
+  const prevKey = prev.toISOString().slice(0,10);
+  data.streak = data.last === prevKey ? (data.streak || 0) + 1 : 1;
+  data.last = todayKey;
+  localStorage.setItem(key, JSON.stringify(data));
+  return data.streak;
+}
+function renderStudyStreak() {
+  const el = document.getElementById('streakNumber');
+  if (!el) return;
+  let data = {};
+  try { data = JSON.parse(localStorage.getItem('qf_streak') || '{}'); } catch(e) {}
+  el.textContent = `${data.streak || 0} day${data.streak === 1 ? '' : 's'}`;
+}
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('screen-quiz')?.classList.contains('active')) return;
+  if (e.target.matches('input,textarea')) {
+    if (e.key === 'Enter' && e.target.id === 'typeAnswerInput') { e.preventDefault(); submitAnswer(); }
+    return;
+  }
+  if (!answered && ['a','b','c','d'].includes(e.key.toLowerCase())) {
+    const i = e.key.toLowerCase().charCodeAt(0) - 97;
+    if (document.getElementById(`opt-${i}`)) selectOption(i);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (answered) nextQuestion(); else submitAnswer();
+  } else if (e.key.toLowerCase() === 'f') {
+    toggleFlag();
+  }
+});
 
 // ── UTILS ─────────────────────────────────────────────────
 function toast(msg) {
@@ -2193,6 +2427,9 @@ function resetQuizSetup() {
   currentQ = 0; score = 0; correctCount = 0; wrongCount = 0; timeoutCount = 0;
   questionTimes = []; selectedAnswers = []; answered = false; timedOut = false;
   players = []; roomCode = ''; isHost = false;
+  answerHistory = [];
+  flaggedQuestions = new Set();
+  reviewMode = false;
 
   difficulty = 'medium';
   setDiff('medium');
@@ -2202,6 +2439,13 @@ function resetQuizSetup() {
 
   const hostNameInput = document.getElementById('hostName');
   if (hostNameInput) hostNameInput.value = 'Host';
+
+  const quizTitle = document.getElementById('quizTitle');
+  if (quizTitle) quizTitle.value = '';
+  const shuffleQuestions = document.getElementById('shuffleQuestions');
+  const shuffleOptions = document.getElementById('shuffleOptions');
+  if (shuffleQuestions) shuffleQuestions.checked = true;
+  if (shuffleOptions) shuffleOptions.checked = true;
 
   const qCount = document.getElementById('qCount');
   const qCountVal = document.getElementById('qCountVal');
@@ -2253,7 +2497,7 @@ function saveQuizHistory(pct) {
     history.unshift({
       id: 'h_' + Date.now() + '_' + Math.floor(Math.random()*1000),
       date: Date.now(),
-      title,
+      title: quizConfig.title || title,
       pct,
       correct: correctCount,
       total: questions.length,
@@ -2387,71 +2631,6 @@ window.addEventListener('resize', () => {
   if ((localStorage.getItem(MOBILEUI_KEY) || 'auto') === 'auto') applyMobileUiMode();
 });
 
-// ── INTERACTIVE 3D SCENE (decorative, homepage gutters) ───
-const SCENE3D_SHAPES = [
-  { id: 'sw1', size: 88, top: '6%',  right: '6%',  bg: 'rgba(124,109,250,0.10)', border: 'rgba(124,109,250,0.55)' },
-  { id: 'sw2', size: 60, bottom: '12%', left: '5%', bg: 'rgba(250,109,154,0.10)', border: 'rgba(250,109,154,0.5)' },
-  { id: 'sw3', size: 46, top: '46%', right: '9%',  bg: 'rgba(109,250,204,0.10)', border: 'rgba(109,250,204,0.5)' },
-  { id: 'sw4', size: 52, top: '65%', left: '6%',   bg: 'rgba(245,200,66,0.10)',  border: 'rgba(245,200,66,0.5)' },
-  { id: 'sw5', size: 32, top: '20%', left: '3%',   bg: 'rgba(124,109,250,0.10)', border: 'rgba(124,109,250,0.5)' },
-  { id: 'sw6', size: 40, bottom: '6%', right: '13%', bg: 'rgba(250,109,154,0.10)', border: 'rgba(250,109,154,0.5)' },
-  { id: 'sw7', size: 56, top: '82%', right: '4%',  bg: 'rgba(109,250,204,0.10)', border: 'rgba(109,250,204,0.5)' },
-  { id: 'sw8', size: 36, top: '34%', left: '11%',  bg: 'rgba(245,200,66,0.10)',  border: 'rgba(245,200,66,0.5)' }
-];
-
-function buildCube(wrap, size, bg, border) {
-  wrap.style.width = size + 'px';
-  wrap.style.height = size + 'px';
-  wrap.style.setProperty('--s', size + 'px');
-  const cube = document.createElement('div');
-  cube.className = 'cube';
-  cube.style.animationDuration = (14 + Math.random() * 10).toFixed(1) + 's';
-  ['f-front','f-back','f-right','f-left','f-top','f-bottom'].forEach(fc => {
-    const f = document.createElement('div');
-    f.className = 'face ' + fc;
-    f.style.setProperty('--face-bg', bg);
-    f.style.setProperty('--face-border', border);
-    cube.appendChild(f);
-  });
-  wrap.appendChild(cube);
-  return cube;
-}
-
-function initScene3D() {
-  const scene = document.getElementById('scene3d');
-  if (!scene) return;
-  const cubes = [];
-  SCENE3D_SHAPES.forEach(s => {
-    const wrap = document.getElementById(s.id);
-    if (!wrap) return;
-    if (s.top) wrap.style.top = s.top;
-    if (s.bottom) wrap.style.bottom = s.bottom;
-    if (s.left) wrap.style.left = s.left;
-    if (s.right) wrap.style.right = s.right;
-    const cube = buildCube(wrap, s.size, s.bg, s.border);
-    cubes.push({ wrap, cube });
-    wrap.addEventListener('click', () => {
-      cube.classList.add('spin-fast');
-      setTimeout(() => cube.classList.remove('spin-fast'), 1500);
-    });
-  });
-
-  // Cursor tilts each cube's wrapper (rotateX/rotateY) rather than
-  // moving it around — the cube itself keeps spinning independently
-  // via its own CSS animation, so the two rotations compose.
-  document.addEventListener('mousemove', (e) => {
-    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
-    const dx = (e.clientX - cx) / cx;
-    const dy = (e.clientY - cy) / cy;
-    cubes.forEach(({ wrap }, i) => {
-      const intensity = 16 + (i % 4) * 4;
-      const rotY = dx * intensity;
-      const rotX = -dy * intensity;
-      wrap.style.transform = `rotateX(${rotX.toFixed(1)}deg) rotateY(${rotY.toFixed(1)}deg)`;
-    });
-  });
-}
-
 updateBadge();
 updateSysBadge();
 if (!isLocalDev() && (MP_SERVER_PROD.includes('YOUR-SERVICE') || !MP_SERVER_PROD)) {
@@ -2468,8 +2647,8 @@ function toggleSidebar() {
 renderPlayersList();
 if (document.getElementById('mode-' + gameMode)) selectMode(gameMode);
 applyMobileUiMode();
-initScene3D();
 renderQuizHistory();
+renderStudyStreak();
 </script>
 </body>
 </html>
